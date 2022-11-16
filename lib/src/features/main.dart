@@ -6,13 +6,14 @@ import 'package:laundrivr/src/features/splash/splash_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import '../constants.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: 'https://miniydczoaawbdteltpm.supabase.co',
-    anonKey:
-        'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im1pbml5ZGN6b2Fhd2JkdGVsdHBtIiwicm9sZSI6ImFub24iLCJpYXQiOjE2NjU2MDQyOTEsImV4cCI6MTk4MTE4MDI5MX0.m1wlatPPRLcQI6PeFu_0LqH0MoVuU_6kqNtVJ5dX_g0',
+    url: Constants.supabaseUrl,
+    anonKey: Constants.supabaseAnonKey,
   );
 
   runApp(const LaundrivrApp());
