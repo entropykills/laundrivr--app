@@ -57,14 +57,14 @@
         </dict>
       </array>
     <key>NSBluetoothAlwaysUsageDescription</key>
-    <string>Need BLE permission</string>
+    <string>Our app uses bluetooth to find, connect and transfer data between different devices</string>
     <key>NSBluetoothPeripheralUsageDescription</key>
-    <string>Need BLE permission</string>
+    <string>Our app uses bluetooth to find, connect and transfer data between different devices</string>
     <key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-    <string>Need Location permission</string>
+    <string>Our app uses location services to know where this device is</string>
     <key>NSLocationAlwaysUsageDescription</key>
-    <string>Need Location permission</string>
+    <string>Our app uses location services to know where this device is</string>
     <key>NSLocationWhenInUseUsageDescription</key>
-    <string>Need Location permission</string>
+    <string>Our app uses location services to know where this device is</string>
 </dict>
 </plist>
