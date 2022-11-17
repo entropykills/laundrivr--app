@@ -155,12 +155,12 @@ class _SignInScreenState extends State<SignInScreen> {
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        Icon(
+                        const Icon(
                           Icons.apple,
                           size: 30,
                           color: Colors.black,
                         ),
-                        SizedBox(
+                        const SizedBox(
                           width: 15,
                         ),
                         Text(

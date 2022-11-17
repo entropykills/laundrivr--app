@@ -11,3 +11,8 @@ class ContainsFilter extends Filter<String> {
   ContainsFilter(String substring)
       : super((String value) => value.contains(substring));
 }
+
+class EndsWithFilter extends Filter<String> {
+  EndsWithFilter(String substring)
+      : super((String value) => value.endsWith(substring));
+}

@@ -41,7 +41,7 @@ class _SplashScreenState extends State<SplashScreen> {
 
     return Scaffold(
       backgroundColor: laundrivrTheme.opaqueBackgroundColor,
-      body: SafeArea(
+      body: const SafeArea(
           child: Center(
               child: CircularProgressIndicator(
         color: Colors.white,

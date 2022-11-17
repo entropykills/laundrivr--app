@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
@@ -15,13 +16,54 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  int _numResults = 0;
+  String _targetDigits = "";
 
-  // create an instance of ble functional test
-  final BleFunctionalTest bleFunctionalTest = BleFunctionalTest();
+  bool _showLoadingSpinner = false;
+
+  // create an instance of ble functional test with the param for updating the loading spinner
+  late BleFunctionalTest bleFunctionalTest =
+      BleFunctionalTest(updateShowLoadingSpinner, showMyDialog);
 
   late final StreamSubscription<AuthState> _authStateSubscription;
   bool _redirecting = false;
+
+  Future<void> showMyDialog(String title, String message) async {
+    // if not mounted don't do anything
+    if (!mounted) {
+      return;
+    }
+
+    return showDialog<void>(
+      context: context,
+      barrierDismissible: false, // user must tap button!
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text(title),
+          content: SingleChildScrollView(
+            child: ListBody(
+              children: <Widget>[
+                Text(message),
+              ],
+            ),
+          ),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Ok'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void updateShowLoadingSpinner(bool showLoadingSpinner) {
+    setState(() {
+      _showLoadingSpinner = showLoadingSpinner;
+    });
+  }
 
   Future<void> _signOut() async {
     try {
@@ -34,10 +76,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _startBleTest() async {
-    int numResults = await bleFunctionalTest.start();
-    setState(() {
-      _numResults = numResults;
-    });
+    bleFunctionalTest.start(EndsWithFilter(_targetDigits));
   }
 
   @override
@@ -89,12 +128,18 @@ class _HomeScreenState extends State<HomeScreen> {
                       labelText: '3 DIGIT MACHINE ID',
                     ),
                     keyboardType: TextInputType.number,
+                    onChanged: (value) {
+                      _targetDigits = value;
+                    },
                   ),
                   const SizedBox(height: 20),
                   ElevatedButton(
                       onPressed: _startBleTest, child: const Text('EXECUTE')),
                   const SizedBox(height: 20),
-                  Text("# of results: $_numResults")
+                  if (_showLoadingSpinner)
+                    const CircularProgressIndicator(
+                      color: Colors.white,
+                    ),
                 ],
               ),
             ),

@@ -6,7 +6,7 @@ import 'package:laundrivr/src/features/splash/splash_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import '../constants.dart';
+import 'constants.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
