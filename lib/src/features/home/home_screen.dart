@@ -1,12 +1,14 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
+import 'package:loader_overlay/loader_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
-import '../../data/ble_adapter.dart';
+import '../../data/adapter/ble_adapter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -33,36 +35,21 @@ class _HomeScreenState extends State<HomeScreen> {
       return;
     }
 
-    return showDialog<void>(
-      context: context,
-      barrierDismissible: false, // user must tap button!
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text(title),
-          content: SingleChildScrollView(
-            child: ListBody(
-              children: <Widget>[
-                Text(message),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            TextButton(
-              child: const Text('Ok'),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
-        );
-      },
-    );
+    await FlutterPlatformAlert.showAlert(
+        windowTitle: title,
+        text: message,
+        alertStyle: AlertButtonStyle.ok,
+        iconStyle: IconStyle.information,
+        windowPosition: AlertWindowPosition.screenCenter);
   }
 
   void updateShowLoadingSpinner(bool showLoadingSpinner) {
     setState(() {
       _showLoadingSpinner = showLoadingSpinner;
     });
+    showLoadingSpinner
+        ? context.loaderOverlay.show()
+        : context.loaderOverlay.hide();
   }
 
   Future<void> _signOut() async {
@@ -104,47 +91,46 @@ class _HomeScreenState extends State<HomeScreen> {
         Theme.of(context).extension<LaundrivrTheme>()!;
     // get the current user from supabase
     final User user = supabase.auth.currentUser!;
-    return Scaffold(
-      backgroundColor: laundrivrTheme.opaqueBackgroundColor,
-      body: SafeArea(
-        child: Center(
-            child: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            const SizedBox(height: 20),
-            const Text('Home Screen'),
-            const SizedBox(height: 20),
-            Text('CURRENT USER ${user.email}'),
-            const SizedBox(height: 20),
-            ElevatedButton(onPressed: _signOut, child: const Text('Sign out')),
-            const SizedBox(height: 100),
-            SizedBox(
-              width: 300,
+    return LoaderOverlay(
+      child: Scaffold(
+        backgroundColor: laundrivrTheme.opaqueBackgroundColor,
+        body: SafeArea(
+          child: Center(
               child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  TextFormField(
-                    decoration: const InputDecoration(
-                      labelText: '3 DIGIT MACHINE ID',
+            mainAxisAlignment: MainAxisAlignment.start,
+            children: [
+              const SizedBox(height: 20),
+              const Text('Home Screen'),
+              const SizedBox(height: 20),
+              Text('CURRENT USER ${user.email}'),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                  onPressed: _signOut, child: const Text('Sign out')),
+              const SizedBox(height: 100),
+              SizedBox(
+                width: 300,
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    TextFormField(
+                      decoration: const InputDecoration(
+                        labelText: '3 DIGIT MACHINE ID',
+                      ),
+                      keyboardType: TextInputType.number,
+                      onChanged: (value) {
+                        _targetDigits = value;
+                      },
                     ),
-                    keyboardType: TextInputType.number,
-                    onChanged: (value) {
-                      _targetDigits = value;
-                    },
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                      onPressed: _startBleTest, child: const Text('EXECUTE')),
-                  const SizedBox(height: 20),
-                  if (_showLoadingSpinner)
-                    const CircularProgressIndicator(
-                      color: Colors.white,
-                    ),
-                ],
+                    const SizedBox(height: 20),
+                    ElevatedButton(
+                        onPressed: _startBleTest, child: const Text('EXECUTE')),
+                    const SizedBox(height: 20),
+                  ],
+                ),
               ),
-            ),
-          ],
-        )),
+            ],
+          )),
+        ),
       ),
     );
   }

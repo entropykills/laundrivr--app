@@ -1,25 +1,24 @@
 import 'dart:developer';
 
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
-import 'package:laundrivr/src/data/adapter.dart';
-import 'package:laundrivr/src/data/ble_constants.dart';
-import 'package:laundrivr/src/data/ble_data_machine.dart';
 import 'package:laundrivr/src/data/filter.dart';
+import 'package:laundrivr/src/data/machine/ble_data_machine.dart';
+import 'package:laundrivr/src/data/utils/ble_constants.dart';
+import 'package:laundrivr/src/data/utils/cscsw_constants.dart';
+
+import './adapter.dart';
 
 /// A class that contains the logic for adapting BLE
 class BleAdapter implements Adapter<FlutterBluePlus> {
   /// A filter to filter out device names of type 1
   static final Filter<String> _typeTwoMachineNameFilter =
-      ContainsFilter("20COL");
+      ContainsFilter(CscswConstants.typeTwoBLENameBeginning);
 
   /// The instance of the FlutterBluePlus class
   final FlutterBluePlus flutterBluePlus = FlutterBluePlus.instance;
 
   /// If FlutterBluePlus is currently scanning
   bool _scanning = false;
-
-  /// If the target device was found
-  bool _foundDevice = false;
 
   /// define target guids
   late Guid _targetServiceGuid;
@@ -61,7 +60,6 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     // set scanning to true so we don't start scanning twice
     _scanning = true;
     // initialize the found device flag
-    _foundDevice = false;
 
     // update the loading spinner
     _updateShowLoadingSpinner(true);
@@ -82,7 +80,6 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
       await _stopScanning();
 
       // update the found device flag
-      _foundDevice = true;
 
       // get the target device
       var result = results.firstWhere(
