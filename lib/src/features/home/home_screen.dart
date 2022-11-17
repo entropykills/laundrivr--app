@@ -6,7 +6,7 @@ import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
-import '../../data/ble_functional_test.dart';
+import '../../data/ble_adapter.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -21,8 +21,8 @@ class _HomeScreenState extends State<HomeScreen> {
   bool _showLoadingSpinner = false;
 
   // create an instance of ble functional test with the param for updating the loading spinner
-  late BleFunctionalTest bleFunctionalTest =
-      BleFunctionalTest(updateShowLoadingSpinner, showMyDialog);
+  late BleAdapter bleFunctionalTest =
+      BleAdapter(updateShowLoadingSpinner, showMyDialog);
 
   late final StreamSubscription<AuthState> _authStateSubscription;
   bool _redirecting = false;
