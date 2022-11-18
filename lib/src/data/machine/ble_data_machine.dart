@@ -9,7 +9,7 @@ import 'package:laundrivr/src/data/utils/cscsw_utils.dart';
 import '../enum/ble_data_machine_process_enum.dart';
 
 class BleDataMachine {
-  final BleAdapter _bleFunctionalTest;
+  final BleAdapter _bleAdapter;
 
   /// A list of the bytes that have been received (buffer)
   final List<int> _receivedBytes = [];
@@ -21,20 +21,24 @@ class BleDataMachine {
       BleFunctionalDataStore();
 
   /// The data machine constructor
-  BleDataMachine(this._bleFunctionalTest);
+  BleDataMachine(this._bleAdapter);
+
+  bool _didCompleteSuccessfulTransaction = false;
+  int _numOfRetries = 0;
+  bool _didRun = false;
 
   /// Writes the given data to the BLE device
   writeData(List<List<int>> data) {
-    // log data being sent
-    log("Sending data: ${data.map((e) => e.map((e) => e.toRadixString(16)).join(" ")).join(" ")}");
+    // log the data being sent as ascii
+    log("Sending data as ascii: ${data.map((e) => e.map((e) => String.fromCharCode(e)).join("")).join(" ")}");
     // write data to the machine
-    _bleFunctionalTest.writeData(data);
+    _bleAdapter.writeData(data);
   }
 
   /// A function that accepts data from the remote machine
   onDataReceived(List<int> data) async {
-    // print the data as ascii
-    log("Received data (ascii): ${data.map((e) => e.toRadixString(16)).join(" ")}");
+    // convert the data to hex, then to ascii
+    log("Received data (hex): ${data.map((e) => String.fromCharCode(e)).join(" ")}");
 
     // add the data to the buffer
     _receivedBytes.addAll(data);
@@ -61,9 +65,6 @@ class BleDataMachine {
     // log the full packet data
     log("Constructed full packet (ascii): ${packet.map((e) => e.toRadixString(16)).join(" ")}");
 
-    // add a two seconds delay
-    await Future.delayed(const Duration(seconds: 1));
-
     // based on the state, call the appropriate function in a case switch
     switch (_state) {
       case DataMachineProcess.start:
@@ -75,12 +76,43 @@ class BleDataMachine {
         _processGetPrice(packet);
         break;
       case DataMachineProcess.startCycleExtend:
+        _processStartExtend(packet);
+        break;
+      case DataMachineProcess.none:
+        // TODO: Handle this case.
         break;
     }
   }
 
+  void _callForDisconnect() {
+    // log that a disconnect is being called
+    log("Calling for disconnect");
+    _bleAdapter.forceDisconnect();
+  }
+
+  void _retry() {
+    // if the number of retries is greater than 3, return
+    if (_numOfRetries > 3) {
+      return;
+    }
+    // increment the number of retries
+    _numOfRetries++;
+    // log that we are retrying the price request
+    log("\n\nERROR: RETRYING\n\n");
+    // reset the state
+    _state = DataMachineProcess.start;
+
+    // clear the buffer (just in case)
+    _receivedBytes.clear();
+
+    // call the start function again
+    start();
+  }
+
   /// The start function that asks the machine for the vendor id
   void start() {
+    // set the flag that the machine has run
+    _didRun = true;
     // create the vendor id packet (asks the CSCSW machine to confirm the vendor id)
     List<int> packet = Uint8List(CscswConstants.cscswVendorId.length + 4);
     List<int> vendorIdBytes = CscswConstants.cscswVendorId.codeUnits;
@@ -138,14 +170,9 @@ class BleDataMachine {
     // and integer (1 or 0) representing whether a retry is needed to fetch the price
     int retryPriceRequest = statusArray[0] & 2;
 
-    // if the retry price request is 1, then we need to retry the price request
-    if (retryPriceRequest == 1) {
-      // reset the state
-      _state = DataMachineProcess.start;
-      // call the start function again
-      start();
-      // log that we are retrying the price request
-      log("\n\nERROR: RETRYING PRICE REQUEST\n\n");
+    // if the retry price request is not zero, then we need to retry the price request
+    if (retryPriceRequest != 0) {
+      _retry();
       return;
     }
 
@@ -194,5 +221,40 @@ class BleDataMachine {
         CscswUtils.formatPacket(seData, "SE"), 20);
     // write the packet to the machine
     writeData(chunksToSend);
+
+    // after sending the data, wait 12 seconds and if the machine has not responded, call for a disconnect
+    Future.delayed(const Duration(seconds: 12), () {
+      if (_state == DataMachineProcess.startCycleExtend) {
+        _callForDisconnect();
+      }
+    });
   }
+
+  /// Processes the start/extend data
+  void _processStartExtend(List<int> data) {
+    // determine if the returned data indicates a successful start/extend
+    if (data.length > 20) {
+      _didCompleteSuccessfulTransaction = true;
+      log("SUCCESSFUL TRANSACTION");
+    } else {
+      _didCompleteSuccessfulTransaction = false;
+      log("UNSUCCESSFUL TRANSACTION");
+    }
+
+    // disconnect from the machine
+    _callForDisconnect();
+
+    // update the state
+    _state = DataMachineProcess.none;
+  }
+
+  /// Create a getter for the 'completedSuccessfulTransaction' boolean
+  bool get didCompleteSuccessfulTransaction =>
+      _didCompleteSuccessfulTransaction;
+
+  /// Create a getter for the number of retries done
+  int get numberOfRetries => _numOfRetries;
+
+  /// Create a getter for the 'didRun' boolean
+  bool get didRun => _didRun;
 }

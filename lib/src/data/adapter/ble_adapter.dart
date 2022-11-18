@@ -51,15 +51,27 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     _showMyDialog = showMyDialog;
   }
 
+  /// A function that forces a disconnect
+  void forceDisconnect() async {
+    var connected = await flutterBluePlus.connectedDevices;
+    for (var device in connected) {
+      device.disconnect();
+    }
+  }
+
   /// Starts the BLE device scanning and functional test
   Future<void> start(Filter<String> targetMachineDigitsFilter) async {
     // if scanning already, don't do anything
     if (_scanning) {
       return;
     }
+    // make sure that flutter blue plus is on
+    if (!await flutterBluePlus.isOn) {
+      await flutterBluePlus.turnOn();
+    }
+
     // set scanning to true so we don't start scanning twice
     _scanning = true;
-    // initialize the found device flag
 
     // update the loading spinner
     _updateShowLoadingSpinner(true);
@@ -133,8 +145,27 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
   }
 
   Future<void> _onDisconnect(BluetoothDevice device) async {
-    // stop scanning, reinitialize the data machine
+    // make sure everything is stopped scanning first
     await _stopScanning();
+    if (!_dataMachine.didRun) {
+      return;
+    }
+    // get the success state of the data machine
+    var success = _dataMachine.didCompleteSuccessfulTransaction;
+    // if it wasn't successful, then send a dialog message
+    if (!success) {
+      // if the number of retries was more than 3, then send a message
+      if (_dataMachine.numberOfRetries >= 3) {
+        _showMyDialog(
+            'Error', 'The machine did not respond to the request 3 times.');
+      } else {
+        _showMyDialog("Error", "The transaction was not successful.");
+        return;
+      }
+    }
+    // show a dialog saying the transaction was successful
+    _showMyDialog("Success", "The transaction was successful.");
+    // reinitialize the data machine
     _dataMachine = BleDataMachine(this);
   }
 
@@ -203,13 +234,11 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
       _dataMachine.onDataReceived(value);
     });
 
-    _showMyDialog("Success", "Remote machine connection success.");
-
     // start the data machine
     _dataMachine.start();
   }
 
-  // add a method to write data
+// add a method to write data
   Future<void> writeData(List<List<int>> data) async {
     // loop through each packet and write it
     for (List<int> packet in data) {

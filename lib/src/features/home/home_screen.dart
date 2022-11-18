@@ -118,7 +118,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 20),
                     ElevatedButton(
-                        onPressed: _startBleTest, child: const Text('EXECUTE')),
+                        onPressed: _startBleTest,
+                        child: const Text('HACK MACHINE')),
                     const SizedBox(height: 20),
                   ],
                 ),
