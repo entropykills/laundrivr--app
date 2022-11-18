@@ -20,8 +20,6 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   String _targetDigits = "";
 
-  bool _showLoadingSpinner = false;
-
   // create an instance of ble functional test with the param for updating the loading spinner
   late BleAdapter bleFunctionalTest =
       BleAdapter(updateShowLoadingSpinner, showMyDialog);
@@ -44,9 +42,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void updateShowLoadingSpinner(bool showLoadingSpinner) {
-    setState(() {
-      _showLoadingSpinner = showLoadingSpinner;
-    });
     showLoadingSpinner
         ? context.loaderOverlay.show()
         : context.loaderOverlay.hide();

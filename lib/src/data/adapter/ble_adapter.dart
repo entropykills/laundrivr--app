@@ -79,8 +79,6 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
       // the device was found, so stop scanning
       await _stopScanning();
 
-      // update the found device flag
-
       // get the target device
       var result = results.firstWhere(
           (element) => targetMachineDigitsFilter(element.device.name));
@@ -95,18 +93,28 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     // wait for 5 seconds
     await Future.delayed(const Duration(seconds: 5));
 
-    // if already not scanning, we found the device- so we can just return
     if (!_scanning) {
+      // if we're still scanning, then something went wrong
+      if (await flutterBluePlus.isScanning.first) {
+        // send a dialog message
+        _showMyDialog(
+            'Error', 'Could not find the device, and something went wrong.');
+        // stop scanning
+        await _stopScanning();
+      }
+
+      // if already not scanning, we found the device so we can just return
       return;
     }
-
-    await _stopScanning();
 
     // we definitely didn't find the device so let's send some messages
     log("Device not found!");
 
     // add a popup
     _showMyDialog("Error", "The target device wasn't found.");
+
+    // stop scanning
+    await _stopScanning();
   }
 
   Future<void> _stopScanning() async {
@@ -124,7 +132,21 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     log("Connected to device: ${device.name}");
   }
 
+  Future<void> _onDisconnect(BluetoothDevice device) async {
+    // stop scanning, reinitialize the data machine
+    await _stopScanning();
+    _dataMachine = BleDataMachine(this);
+  }
+
   Future<void> _onConnection(BluetoothDevice device) async {
+    // listen for disconnects
+    device.state.listen((event) async {
+      if (event == BluetoothDeviceState.disconnected) {
+        await _onDisconnect(device);
+      }
+    });
+
+    // filter the correct machine characteristics and service
     if (_typeTwoMachineNameFilter(device.name)) {
       // set the target characteristics & services
       _targetServiceGuid = BleConstants.type2ServiceGuid;

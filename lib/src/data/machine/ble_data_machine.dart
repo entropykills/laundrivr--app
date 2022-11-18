@@ -33,10 +33,8 @@ class BleDataMachine {
 
   /// A function that accepts data from the remote machine
   onDataReceived(List<int> data) async {
-    log("data received: $data");
-
-    // print the data as hex
-    log("data received as hex: ${CscswUtils.convertBytesToHexString(data)}");
+    // print the data as ascii
+    log("Received data (ascii): ${data.map((e) => e.toRadixString(16)).join(" ")}");
 
     // add the data to the buffer
     _receivedBytes.addAll(data);
@@ -60,8 +58,8 @@ class BleDataMachine {
     // clear the buffer
     _receivedBytes.clear();
 
-    // log the packet data
-    log("packet received: $packet");
+    // log the full packet data
+    log("Constructed full packet (ascii): ${packet.map((e) => e.toRadixString(16)).join(" ")}");
 
     // add a two seconds delay
     await Future.delayed(const Duration(seconds: 1));
@@ -130,8 +128,6 @@ class BleDataMachine {
 
   /// Processes the price data
   void _processGetPrice(List<int> data) {
-    // log that the price data has been received
-    log("price data received: $data");
     // a byte array with the status of the machine
     List<int> statusArray = Uint8List(1);
     // copy the "vend price" data to the data store
@@ -141,6 +137,17 @@ class BleDataMachine {
 
     // and integer (1 or 0) representing whether a retry is needed to fetch the price
     int retryPriceRequest = statusArray[0] & 2;
+
+    // if the retry price request is 1, then we need to retry the price request
+    if (retryPriceRequest == 1) {
+      // reset the state
+      _state = DataMachineProcess.start;
+      // call the start function again
+      start();
+      // log that we are retrying the price request
+      log("\n\nERROR: RETRYING PRICE REQUEST\n\n");
+      return;
+    }
 
     // set the pulse money
     _bleFunctionalDataStore.pulseMoney = CscswUtils.getPriceFromPacket(data);
@@ -185,8 +192,6 @@ class BleDataMachine {
     // format the packet and split it into 20 byte chunks
     List<List<int>> chunksToSend = CscswUtils.splitBytesIntoChunks(
         CscswUtils.formatPacket(seData, "SE"), 20);
-    // log the chunks to send
-    log("se chunks to send: $chunksToSend");
     // write the packet to the machine
     writeData(chunksToSend);
   }
