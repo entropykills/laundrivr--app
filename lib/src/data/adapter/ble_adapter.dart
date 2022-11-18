@@ -30,6 +30,9 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
   late BluetoothCharacteristic _targetCharNotify;
   late BluetoothService _targetService;
 
+  // Define the target device
+  late BluetoothDevice _targetDevice;
+
   /// The Bluetooth data machine
   late BleDataMachine _dataMachine;
 
@@ -53,9 +56,9 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
 
   /// A function that forces a disconnect
   void forceDisconnect() async {
-    var connected = await flutterBluePlus.connectedDevices;
-    for (var device in connected) {
-      device.disconnect();
+    // if the target exists and is connected, disconnect
+    if (await _targetDevice.state.first == BluetoothDeviceState.connected) {
+      await _targetDevice.disconnect();
     }
   }
 
@@ -64,10 +67,6 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     // if scanning already, don't do anything
     if (_scanning) {
       return;
-    }
-    // make sure that flutter blue plus is on
-    if (!await flutterBluePlus.isOn) {
-      await flutterBluePlus.turnOn();
     }
 
     // set scanning to true so we don't start scanning twice
@@ -96,10 +95,11 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
           (element) => targetMachineDigitsFilter(element.device.name));
 
       // connect to the device
-      await _connectToDevice(result.device);
-
-      // call the on connection 'callback'
-      await _onConnection(result.device);
+      await _connectToDevice(result.device, _onConnection(result.device), () {
+        // if the connection failed, show a dialog
+        _showMyDialog('Connection Failed',
+            'Could not connect to the found device. Please try again.');
+      });
     });
 
     // wait for 5 seconds
@@ -138,10 +138,15 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     _updateShowLoadingSpinner(false);
   }
 
-  Future<void> _connectToDevice(BluetoothDevice device) async {
+  Future<void> _connectToDevice(BluetoothDevice device,
+      Future<void> successCallback, Function errorCallback) async {
+    // set the target device
+    _targetDevice = device;
     // connect to the device
-    await device.connect();
-    log("Connected to device: ${device.name}");
+    device
+        .connect()
+        .then((value) => successCallback)
+        .onError((error, stackTrace) => errorCallback);
   }
 
   Future<void> _onDisconnect(BluetoothDevice device) async {
@@ -238,15 +243,16 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     _dataMachine.start();
   }
 
-// add a method to write data
+  /// Writes the data to the target characteristic
   Future<void> writeData(List<List<int>> data) async {
     // loop through each packet and write it
     for (List<int> packet in data) {
-      // wait for the write request to go through so all data is sent!
+      // wait for the write request to go through so all data is sent
       await _targetCharWrite.write(packet, withoutResponse: false);
     }
   }
 
+  /// Provides the adaption of the flutter blue plus instance
   @override
   FlutterBluePlus provideAdaption() {
     return flutterBluePlus;

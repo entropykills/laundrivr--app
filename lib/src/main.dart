@@ -31,6 +31,7 @@ class LaundrivrApp extends StatelessWidget {
         extensions: <ThemeExtension<dynamic>>[
           LaundrivrTheme(
             opaqueBackgroundColor: const Color(0xff0F162A),
+            secondaryOpaqueBackgroundColor: const Color(0xff182243),
             primaryBrightTextColor: const Color(0xffffffff),
             primaryTextStyle: GoogleFonts.urbanist(),
           )

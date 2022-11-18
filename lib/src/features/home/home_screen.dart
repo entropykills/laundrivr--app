@@ -5,6 +5,7 @@ import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:loader_overlay/loader_overlay.dart';
+import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
@@ -19,12 +20,15 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   String _targetDigits = "";
+  bool _isTargetDigitsValidValue = false;
 
   // create an instance of ble functional test with the param for updating the loading spinner
   late BleAdapter bleFunctionalTest =
       BleAdapter(updateShowLoadingSpinner, showMyDialog);
 
   late final StreamSubscription<AuthState> _authStateSubscription;
+  final TextEditingController _targetDigitsValidityController =
+      TextEditingController();
   bool _redirecting = false;
 
   Future<void> showMyDialog(String title, String message) async {
@@ -57,12 +61,25 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
-  void _startBleTest() async {
+  void _startBleTransaction() async {
     bleFunctionalTest.start(EndsWithFilter(_targetDigits));
+    _targetDigitsValidityController.clear();
+    setState(() {
+      _targetDigits = "";
+    });
   }
 
   @override
   void initState() {
+    _targetDigitsValidityController.addListener(() {
+      final isTargetDigitsValid =
+          _targetDigitsAreValid(_targetDigitsValidityController.value.text);
+      if (isTargetDigitsValid != _isTargetDigitsValidValue) {
+        setState(() {
+          _isTargetDigitsValidValue = isTargetDigitsValid;
+        });
+      }
+    });
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
       if (_redirecting) return;
       final session = data.session;
@@ -77,7 +94,38 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void dispose() {
     _authStateSubscription.cancel();
+    _targetDigitsValidityController.clear();
     super.dispose();
+  }
+
+  String _validateTargetDigits(String value) {
+    if (value.isEmpty) {
+      return 'Please enter three numbers';
+    }
+    if (!_targetDigitsAreOnlyNumbers(value)) {
+      return 'Please enter only numbers';
+    }
+
+    if (!_targetDigitsAreThree(value)) {
+      return 'Please enter three numbers';
+    }
+
+    return "";
+  }
+
+  bool _targetDigitsAreValid(String value) {
+    return value.isNotEmpty &&
+        _targetDigitsAreThree(value) &&
+        _targetDigitsAreOnlyNumbers(value);
+  }
+
+  bool _targetDigitsAreThree(String value) {
+    return value.length == 3;
+  }
+
+  bool _targetDigitsAreOnlyNumbers(String targetDigits) {
+    // return false if the input is not only numbers or if it's less than 3 digits
+    return RegExp(r'^[0-9]+$').hasMatch(targetDigits);
   }
 
   @override
@@ -94,35 +142,88 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
             mainAxisAlignment: MainAxisAlignment.start,
             children: [
-              const SizedBox(height: 20),
-              const Text('Home Screen'),
-              const SizedBox(height: 20),
-              Text('CURRENT USER ${user.email}'),
-              const SizedBox(height: 20),
+              const SizedBox(height: 25),
+              Text('Home Screen',
+                  style: laundrivrTheme.primaryTextStyle?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  )),
+              const SizedBox(height: 25),
+              Text('${user.email}',
+                  style: laundrivrTheme.primaryTextStyle?.copyWith(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 24,
+                  )),
+              const SizedBox(height: 25),
               ElevatedButton(
-                  onPressed: _signOut, child: const Text('Sign out')),
-              const SizedBox(height: 100),
+                  style: ElevatedButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 50, vertical: 20),
+                      shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(10)),
+                      primary: laundrivrTheme.secondaryOpaqueBackgroundColor,
+                      elevation: 10),
+                  onPressed: _signOut,
+                  child: Text('Sign out',
+                      style: laundrivrTheme.primaryTextStyle?.copyWith(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 24,
+                      ))),
+              const SizedBox(height: 50),
               SizedBox(
                 width: 300,
                 child: Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    TextFormField(
-                      decoration: const InputDecoration(
-                        labelText: '3 DIGIT MACHINE ID',
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 200,
+                        child: PinCodeTextField(
+                          controller: _targetDigitsValidityController,
+                          appContext: context,
+                          length: 3,
+                          animationType: AnimationType.scale,
+                          cursorColor: laundrivrTheme.primaryBrightTextColor,
+                          pinTheme: PinTheme(
+                            shape: PinCodeFieldShape.underline,
+                            activeColor: _isTargetDigitsValidValue
+                                ? Colors.green
+                                : Colors.red,
+                            fieldHeight: 50,
+                          ),
+                          animationDuration: const Duration(milliseconds: 300),
+                          validator: (v) {
+                            String output = _validateTargetDigits(v!);
+                            if (output.isEmpty) {
+                              return null;
+                            } else {
+                              return output;
+                            }
+                          },
+                          onChanged: (value) {
+                            setState(() {
+                              _targetDigits = value;
+                            });
+                          },
+                        ),
                       ),
-                      keyboardType: TextInputType.number,
-                      onChanged: (value) {
-                        _targetDigits = value;
-                      },
-                    ),
-                    const SizedBox(height: 20),
-                    ElevatedButton(
-                        onPressed: _startBleTest,
-                        child: const Text('HACK MACHINE')),
-                    const SizedBox(height: 20),
-                  ],
-                ),
+                      const SizedBox(height: 25),
+                      ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 50, vertical: 20),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10)),
+                              primary:
+                                  laundrivrTheme.secondaryOpaqueBackgroundColor,
+                              elevation: 10),
+                          onPressed: _isTargetDigitsValidValue
+                              ? _startBleTransaction
+                              : null,
+                          child: Text('Hack Machine',
+                              style: laundrivrTheme.primaryTextStyle?.copyWith(
+                                fontWeight: FontWeight.w800,
+                                fontSize: 24,
+                              ))),
+                    ]),
               ),
             ],
           )),

@@ -85,6 +85,8 @@ class BleDataMachine {
   }
 
   void _callForDisconnect() {
+    // reset the state so nothing happens in the future
+    _state = DataMachineProcess.none;
     // log that a disconnect is being called
     log("Calling for disconnect");
     _bleAdapter.forceDisconnect();
@@ -225,6 +227,8 @@ class BleDataMachine {
     // after sending the data, wait 12 seconds and if the machine has not responded, call for a disconnect
     Future.delayed(const Duration(seconds: 12), () {
       if (_state == DataMachineProcess.startCycleExtend) {
+        // call for a disconnect
+        // also be aware that the _didCompleteSuccessfulTransaction would be currently set to false
         _callForDisconnect();
       }
     });
@@ -235,10 +239,8 @@ class BleDataMachine {
     // determine if the returned data indicates a successful start/extend
     if (data.length > 20) {
       _didCompleteSuccessfulTransaction = true;
-      log("SUCCESSFUL TRANSACTION");
     } else {
       _didCompleteSuccessfulTransaction = false;
-      log("UNSUCCESSFUL TRANSACTION");
     }
 
     // disconnect from the machine

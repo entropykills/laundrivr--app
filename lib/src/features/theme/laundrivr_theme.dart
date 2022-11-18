@@ -5,9 +5,11 @@ class LaundrivrTheme extends ThemeExtension<LaundrivrTheme> {
   const LaundrivrTheme(
       {required this.opaqueBackgroundColor,
       required this.primaryBrightTextColor,
-      required this.primaryTextStyle});
+      required this.primaryTextStyle,
+      required this.secondaryOpaqueBackgroundColor});
 
   final Color? opaqueBackgroundColor;
+  final Color? secondaryOpaqueBackgroundColor;
   final Color? primaryBrightTextColor;
   final TextStyle? primaryTextStyle;
 
@@ -22,6 +24,8 @@ class LaundrivrTheme extends ThemeExtension<LaundrivrTheme> {
       primaryBrightTextColor:
           primaryBrightTextColor ?? this.primaryBrightTextColor,
       primaryTextStyle: primaryTextStyle ?? this.primaryTextStyle,
+      secondaryOpaqueBackgroundColor:
+          secondaryOpaqueBackgroundColor ?? this.secondaryOpaqueBackgroundColor,
     );
   }
 
@@ -33,6 +37,8 @@ class LaundrivrTheme extends ThemeExtension<LaundrivrTheme> {
     return LaundrivrTheme(
       opaqueBackgroundColor:
           Color.lerp(opaqueBackgroundColor, other.opaqueBackgroundColor, t),
+      secondaryOpaqueBackgroundColor: Color.lerp(secondaryOpaqueBackgroundColor,
+          other.secondaryOpaqueBackgroundColor, t),
       primaryBrightTextColor:
           Color.lerp(primaryBrightTextColor, other.primaryBrightTextColor, t),
       primaryTextStyle:
