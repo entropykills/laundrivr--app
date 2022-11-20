@@ -23,10 +23,10 @@ class PurchaseItem {
 
 class _PurchaseScreenState extends State<PurchaseScreen> {
   static const List<PurchaseItem> _purchaseItems = [
-    PurchaseItem(name: 'Basic', price: 1.99, loadQuantity: 2),
-    PurchaseItem(name: 'Occasional Washer', price: 13.99, loadQuantity: 5),
-    PurchaseItem(name: 'Semester Long', price: 22.49, loadQuantity: 30),
-    PurchaseItem(name: 'Laundry Lunatic', price: 37.49, loadQuantity: 60),
+    PurchaseItem(name: 'Basic', price: 0.99, loadQuantity: 2),
+    PurchaseItem(name: 'Occasional Washer', price: 12.99, loadQuantity: 5),
+    PurchaseItem(name: 'Semester Long', price: 19.99, loadQuantity: 30),
+    PurchaseItem(name: 'Laundry Lunatic', price: 35.99, loadQuantity: 60),
   ];
 
   @override

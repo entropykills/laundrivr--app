@@ -66,5 +66,10 @@
     <string>Our app uses location services to know where this device is</string>
     <key>NSLocationWhenInUseUsageDescription</key>
     <string>Our app uses location services to know where this device is</string>
+    <key>LSApplicationQueriesSchemes</key>
+    <array>
+      <string>mailto</string>
+      <string>https</string>
+    </array>
 </dict>
 </plist>
