@@ -98,3 +98,5 @@ flutter:
   assets:
     - assets/images/laundrivr_logo+text_golden.svg
     - assets/images/google_logo.svg
+    - assets/images/enter-number-icon.svg
+    - assets/images/qr-code-scan-icon.svg

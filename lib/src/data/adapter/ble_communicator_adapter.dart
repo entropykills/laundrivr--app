@@ -9,13 +9,16 @@ import 'package:laundrivr/src/data/utils/cscsw_constants.dart';
 import './adapter.dart';
 
 /// A class that contains the logic for adapting BLE
-class BleAdapter implements Adapter<FlutterBluePlus> {
+class BleCommunicatorAdapter implements Adapter<FlutterBluePlus> {
+  /// The singleton instance of this class
+  static final BleCommunicatorAdapter _singleton =
+      BleCommunicatorAdapter._internal();
+
+  BleCommunicatorAdapter._internal();
+
   /// A filter to filter out device names of type 1
   static final Filter<String> _typeTwoMachineNameFilter =
       ContainsFilter(CscswConstants.typeTwoBLENameBeginning);
-
-  /// The instance of the FlutterBluePlus class
-  final FlutterBluePlus flutterBluePlus = FlutterBluePlus.instance;
 
   /// If FlutterBluePlus is currently scanning
   bool _scanning = false;
@@ -34,24 +37,11 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
   late BluetoothDevice _targetDevice;
 
   /// The Bluetooth data machine
-  late BleDataMachine _dataMachine;
-
-  /// A function to update a loading spinner on the home page
-  /// todo temporary
-  late void Function(bool) _updateShowLoadingSpinner;
-
-  /// A function that when called, shows a dialog
-  /// todo temporary
-  late void Function(String, String) _showMyDialog;
+  late BleDataMachine _dataMachine = BleDataMachine(this);
 
   // add a constructor
-  BleAdapter(
-    void Function(bool) updateShowLoadingSpinner,
-    void Function(String, String) showMyDialog,
-  ) {
-    _dataMachine = BleDataMachine(this);
-    _updateShowLoadingSpinner = updateShowLoadingSpinner;
-    _showMyDialog = showMyDialog;
+  factory BleCommunicatorAdapter() {
+    return _singleton;
   }
 
   /// A function that forces a disconnect
@@ -72,14 +62,11 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     // set scanning to true so we don't start scanning twice
     _scanning = true;
 
-    // update the loading spinner
-    _updateShowLoadingSpinner(true);
-
     // scan for 5 seconds
-    await flutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+    await provideAdaption().startScan(timeout: const Duration(seconds: 5));
 
     // listen for results and call a callback with the results
-    flutterBluePlus.scanResults.listen((results) async {
+    provideAdaption().scanResults.listen((results) async {
       // if the results do not contain the target device
       if (!results
           .any((element) => targetMachineDigitsFilter(element.device.name))) {
@@ -97,8 +84,8 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
       // connect to the device
       await _connectToDevice(result.device, _onConnection(result.device), () {
         // if the connection failed, show a dialog
-        _showMyDialog('Connection Failed',
-            'Could not connect to the found device. Please try again.');
+        /* _showMyDialog('Connection Failed',
+            'Could not connect to the found device. Please try again.');*/
       });
     });
 
@@ -107,10 +94,10 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
 
     if (!_scanning) {
       // if we're still scanning, then something went wrong
-      if (await flutterBluePlus.isScanning.first) {
+      if (await provideAdaption().isScanning.first) {
         // send a dialog message
-        _showMyDialog(
-            'Error', 'Could not find the device, and something went wrong.');
+        // _showMyDialog(
+        //     'Error', 'Could not find the device, and something went wrong.');
         // stop scanning
         await _stopScanning();
       }
@@ -123,7 +110,7 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     log("Device not found!");
 
     // add a popup
-    _showMyDialog("Error", "The target device wasn't found.");
+    // _showMyDialog("Error", "The target device wasn't found.");
 
     // stop scanning
     await _stopScanning();
@@ -131,11 +118,9 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
 
   Future<void> _stopScanning() async {
     // stop scanning
-    await flutterBluePlus.stopScan();
+    await provideAdaption().stopScan();
     // set the scanning flag to false
     _scanning = false;
-    // update the loading spinner to disappear
-    _updateShowLoadingSpinner(false);
   }
 
   Future<void> _connectToDevice(BluetoothDevice device,
@@ -161,15 +146,15 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
     if (!success) {
       // if the number of retries was more than 3, then send a message
       if (_dataMachine.numberOfRetries >= 3) {
-        _showMyDialog(
-            'Error', 'The machine did not respond to the request 3 times.');
+        // _showMyDialog(
+        //     'Error', 'The machine did not respond to the request 3 times.');
       } else {
-        _showMyDialog("Error", "The transaction was not successful.");
+        // _showMyDialog("Error", "The transaction was not successful.");
         return;
       }
     }
     // show a dialog saying the transaction was successful
-    _showMyDialog("Success", "The transaction was successful.");
+    // _showMyDialog("Success", "The transaction was successful.");
     // reinitialize the data machine
     _dataMachine = BleDataMachine(this);
   }
@@ -255,6 +240,6 @@ class BleAdapter implements Adapter<FlutterBluePlus> {
   /// Provides the adaption of the flutter blue plus instance
   @override
   FlutterBluePlus provideAdaption() {
-    return flutterBluePlus;
+    return FlutterBluePlus.instance;
   }
 }

@@ -1,7 +1,7 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
-import 'package:laundrivr/src/data/adapter/ble_adapter.dart';
+import 'package:laundrivr/src/data/adapter/ble_communicator_adapter.dart';
 import 'package:laundrivr/src/data/store/ble_functional_data_store.dart';
 import 'package:laundrivr/src/data/utils/cscsw_constants.dart';
 import 'package:laundrivr/src/data/utils/cscsw_utils.dart';
@@ -9,7 +9,7 @@ import 'package:laundrivr/src/data/utils/cscsw_utils.dart';
 import '../enum/ble_data_machine_process_enum.dart';
 
 class BleDataMachine {
-  final BleAdapter _bleAdapter;
+  final BleCommunicatorAdapter _bleAdapter;
 
   /// A list of the bytes that have been received (buffer)
   final List<int> _receivedBytes = [];
