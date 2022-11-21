@@ -1,15 +1,16 @@
 import 'dart:developer';
 import 'dart:typed_data';
 
-import 'package:laundrivr/src/data/adapter/ble_communicator_adapter.dart';
+import 'package:laundrivr/src/data/adapter/ble_adapter.dart';
+import 'package:laundrivr/src/data/machine/data_machine.dart';
 import 'package:laundrivr/src/data/store/ble_functional_data_store.dart';
 import 'package:laundrivr/src/data/utils/cscsw_constants.dart';
 import 'package:laundrivr/src/data/utils/cscsw_utils.dart';
 
 import '../enum/ble_data_machine_process_enum.dart';
 
-class BleDataMachine {
-  final BleCommunicatorAdapter _bleAdapter;
+class BleDataMachine extends DataMachine {
+  final BleAdapter _bleAdapter;
 
   /// A list of the bytes that have been received (buffer)
   final List<int> _receivedBytes = [];
@@ -32,11 +33,12 @@ class BleDataMachine {
     // log the data being sent as ascii
     log("Sending data as ascii: ${data.map((e) => e.map((e) => String.fromCharCode(e)).join("")).join(" ")}");
     // write data to the machine
-    _bleAdapter.writeData(data);
+    _bleAdapter.write(data);
   }
 
   /// A function that accepts data from the remote machine
-  onDataReceived(List<int> data) async {
+  @override
+  void onReceiveData(List<int> data) async {
     // convert the data to hex, then to ascii
     log("Received data (hex): ${data.map((e) => String.fromCharCode(e)).join(" ")}");
 
@@ -88,8 +90,8 @@ class BleDataMachine {
     // reset the state so nothing happens in the future
     _state = DataMachineProcess.none;
     // log that a disconnect is being called
-    log("Calling for disconnect");
-    _bleAdapter.forceDisconnect();
+    log("Calling for abort");
+    _bleAdapter.endTransaction();
   }
 
   void _retry() {

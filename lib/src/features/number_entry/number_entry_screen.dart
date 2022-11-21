@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
+import 'package:laundrivr/src/data/adapter/ble_communicator_adapter_4.dart';
 import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:loader_overlay/loader_overlay.dart';
@@ -9,7 +10,6 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
-import '../../data/adapter/ble_communicator_adapter.dart';
 
 class NumberEntryScreen extends StatefulWidget {
   const NumberEntryScreen({Key? key}) : super(key: key);
@@ -22,7 +22,8 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
   String _targetDigits = "";
   bool _isTargetDigitsValidValue = false;
 
-  late BleCommunicatorAdapter bleAdapterCommunicator = BleCommunicatorAdapter();
+  late BleCommunicatorAdapter4 bleAdapterCommunicator =
+      BleCommunicatorAdapter4();
 
   late final StreamSubscription<AuthState> _authStateSubscription;
   final TextEditingController _targetDigitsValidityController =
@@ -55,7 +56,12 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
   }
 
   void _startBleTransaction() async {
-    bleAdapterCommunicator.start(EndsWithFilter(_targetDigits));
+    // bleAdapterCommunicator.execute(EndsWithFilter(_targetDigits), (result) {
+    //   // display the result message as a dialog
+    //   showMyDialog("Machine Execution Result",
+    //       result.errorMessage != null ? result.errorMessage! : "Success");
+    // });
+    bleAdapterCommunicator.execute(EndsWithFilter(_targetDigits));
     _targetDigitsValidityController.clear();
     setState(() {
       _targetDigits = "";

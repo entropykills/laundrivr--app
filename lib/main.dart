@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:laundrivr/src/ble/ble_reactive_instance.dart';
 import 'package:laundrivr/src/features/root/root_screen.dart';
 import 'package:laundrivr/src/features/sign_in/sign_in_screen.dart';
 import 'package:laundrivr/src/features/splash/splash_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
-import 'constants.dart';
-import 'features/number_entry/number_entry_screen.dart';
+import 'src/constants.dart';
+import 'src/features/number_entry/number_entry_screen.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -23,9 +24,11 @@ Future<void> main() async {
 class LaundrivrApp extends StatelessWidget {
   const LaundrivrApp({Key? key}) : super(key: key);
 
-  // This widget is the root of your application.
   @override
   Widget build(BuildContext context) {
+    WidgetsFlutterBinding.ensureInitialized();
+    // initialize ble
+    BleReactiveInstance().ble.initialize();
     return MaterialApp(
       title: 'Laundrivr',
       theme: ThemeData.dark().copyWith(extensions: <ThemeExtension<dynamic>>[
@@ -39,7 +42,7 @@ class LaundrivrApp extends StatelessWidget {
           unselectedIconColor: const Color(0xff546087),
           goldenTextColor: const Color(0xffFDDD02),
           bottomNavBarBackgroundColor: const Color(0xff273563),
-          brightBadgeBackgroundColor: const Color(0xff4A72FF),
+          brightBadgeBackgroundColor: const Color(0xff479ade),
           pricingGreen: const Color(0xff6EF54C),
         )
       ]),
