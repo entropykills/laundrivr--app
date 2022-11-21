@@ -119,8 +119,6 @@ class BleCommunicatorAdapter4 extends BleAdapter {
           // initialize the data machine
           _bleDataMachine = BleDataMachine(this);
 
-          log("Starting to listen to the characteristic notification");
-
           // start listening to the characteristic notification subscription
           _bleCharacteristicNotificationSubscription = _bleDeviceInteractor
               .subScribeToCharacteristic(
@@ -128,7 +126,7 @@ class BleCommunicatorAdapter4 extends BleAdapter {
                       machineType, targetDevice))
               .listen((event) {
             // log that we received a notification
-            log('Received notification: $event');
+            log('Received data from characteristic notification: $event');
             // call the on receive data callback in the data machine
             _bleDataMachine.onReceiveData(event);
           });
@@ -167,14 +165,11 @@ class BleCommunicatorAdapter4 extends BleAdapter {
 
   @override
   void endTransaction() {
-    // TODO: implement endTransaction
     _cancelAllSubscriptions();
   }
 
   @override
   Future<void> write(List<List<int>> data) async {
-    // TODO: implement write
-
     // loop through the data
     for (List<int> datum in data) {
       // log that we are writing data

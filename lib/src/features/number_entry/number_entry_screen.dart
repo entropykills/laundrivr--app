@@ -2,7 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
-import 'package:laundrivr/src/data/adapter/ble_communicator_adapter_4.dart';
+import 'package:laundrivr/src/data/adapter/ble_communicator_adapter_reactive.dart';
 import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:loader_overlay/loader_overlay.dart';
