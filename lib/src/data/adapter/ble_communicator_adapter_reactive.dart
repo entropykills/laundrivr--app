@@ -6,12 +6,16 @@ import 'package:laundrivr/src/ble/ble_device_connector.dart';
 import 'package:laundrivr/src/data/adapter/ble_adapter.dart';
 import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/data/machine/ble_data_machine.dart';
+import 'package:laundrivr/src/data/machine/data_machine.dart';
+import 'package:laundrivr/src/data/machine/empty_data_machine.dart';
 import 'package:laundrivr/src/data/utils/ble_constants.dart';
 import 'package:laundrivr/src/data/utils/ble_utils.dart';
+import 'package:laundrivr/src/data/utils/result/communicator_execution_result.dart';
 
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/ble_scanner.dart';
 import '../enum/ble_machine_type.dart';
+import '../utils/result/data_machine_result.dart';
 
 class BleCommunicatorAdapter4 extends BleAdapter {
   // NOTES: ble is always scanning, we just listen when we want to
@@ -36,7 +40,7 @@ class BleCommunicatorAdapter4 extends BleAdapter {
   late StreamSubscription<List<int>> _bleCharacteristicNotificationSubscription;
 
   /// Data machine
-  late BleDataMachine _bleDataMachine;
+  late DataMachine _bleDataMachine = EmptyDataMachine();
 
   /// If we found a device
   bool _didFindDevice = false;
@@ -47,16 +51,19 @@ class BleCommunicatorAdapter4 extends BleAdapter {
   /// Target device
   late DiscoveredDevice _targetDevice;
 
-  Future<void> execute(EndsWithFilter targetMachineNameEnding) async {
+  Future<CommunicatorExecutionResult> execute(
+      EndsWithFilter targetMachineNameEnding) async {
     // tell the scanner to start scanning
     _bleScanner.startScan([]);
 
     // start listening to the scan subscription
     _bleScannerSubscription = _bleScanner.state.listen((event) async {
       List<DiscoveredDevice> discoveredDevices = event.discoveredDevices;
-      for (var value in discoveredDevices) {
-        log("Found device: ${value.name}");
-      }
+      // for (var value in discoveredDevices) {
+      //   log("Found device: ${value.name}");
+      // }
+      // log the number of devices found
+      log("Found ${discoveredDevices.length} devices");
       if (!discoveredDevices
           .any((element) => targetMachineNameEnding.call(element.name))) {
         return;
@@ -68,15 +75,15 @@ class BleCommunicatorAdapter4 extends BleAdapter {
       // we found a device, update the flag
       _didFindDevice = true;
 
-      // log that we found a device
-      log('Found target device: ${discoveredDevices.first.name}');
-
-      // cancel the scan subscription
-      _bleScannerSubscription.cancel();
-
       // get the target device
       DiscoveredDevice targetDevice = discoveredDevices
           .firstWhere((element) => targetMachineNameEnding.call(element.name));
+
+      // log that we found a device
+      log('Found target device: ${targetDevice.name}, ${targetDevice.id}');
+
+      // cancel the scan subscription
+      _bleScannerSubscription.cancel();
 
       // connect to the target machine
       await _bleDeviceConnector.connect(targetDevice.id);
@@ -150,16 +157,49 @@ class BleCommunicatorAdapter4 extends BleAdapter {
     // //  // CANCEL ALL SUBSCRIPTIONS
     // //  // SHOW DIALOG THAT THE DEVICE WAS NOT FOUND
 
-    // wait 5 seconds
-    await Future.delayed(const Duration(seconds: 5));
+    await Future.delayed(const Duration(seconds: 20));
 
-    // if the device was not found
+    _cancelAllSubscriptions();
+
     if (!_didFindDevice) {
-      // cancel all subscriptions
-      _cancelAllSubscriptions();
+      // satisfy the future with an error
+      return CommunicatorExecutionResult(
+        anErrorOccurred: true,
+        laundryMachineWasFound: false,
+        couldConnectToLaundryMachine: false,
+        associatedErrorMessage: 'Could not find the device',
+      );
+    } else {
+      // if the data machine is not a BleDataMachine, throw an error
+      if (_bleDataMachine is! BleDataMachine ||
+          _bleDataMachine.isPlaceholder()) {
+        // satisfy the future with an error
+        return CommunicatorExecutionResult(
+          anErrorOccurred: true,
+          laundryMachineWasFound: false,
+          couldConnectToLaundryMachine: false,
+          associatedErrorMessage: 'Could not find the device',
+        );
+      }
 
-      // log that the device was not found
-      log('Device was not found');
+      // get the result from the data machine
+      bool didCompleteSuccessfulTransaction =
+          _bleDataMachine.didCompleteSuccessfulTransaction();
+      int numberOfRetries = _bleDataMachine.getNumOfRetries();
+
+      // construct the result
+      DataMachineResult result = DataMachineResult(
+        numberOfRetries,
+        didCompleteSuccessfulTransaction,
+      );
+
+      // return the result
+      return CommunicatorExecutionResult(
+        anErrorOccurred: false,
+        laundryMachineWasFound: true,
+        couldConnectToLaundryMachine: true,
+        dataMachineResult: result,
+      );
     }
   }
 
@@ -183,6 +223,12 @@ class BleCommunicatorAdapter4 extends BleAdapter {
   void _cancelAllSubscriptions() {
     // log that we are cancelling all subscriptions
     log('Cancelling all subscriptions');
+    try {
+      _bleScanner.stopScan();
+    } catch (e) {
+      log('Error while stopping scan: $e');
+    }
+
     try {
       _bleScannerSubscription.cancel();
     } catch (e) {

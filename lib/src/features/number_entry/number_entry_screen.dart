@@ -10,6 +10,7 @@ import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
+import '../../data/utils/result/data_machine_result.dart';
 
 class NumberEntryScreen extends StatefulWidget {
   const NumberEntryScreen({Key? key}) : super(key: key);
@@ -61,11 +62,35 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
     //   showMyDialog("Machine Execution Result",
     //       result.errorMessage != null ? result.errorMessage! : "Success");
     // });
-    bleAdapterCommunicator.execute(EndsWithFilter(_targetDigits));
+
+    String targetMachineNameEnding = _targetDigits;
+
     _targetDigitsValidityController.clear();
+
     setState(() {
       _targetDigits = "";
     });
+
+    // start the ble transaction
+    var result = await bleAdapterCommunicator
+        .execute(EndsWithFilter(targetMachineNameEnding));
+
+    if (result.anErrorOccurred) {
+      if (result.associatedErrorMessage != null) {
+        showMyDialog(
+            "Machine Execution Result", result.associatedErrorMessage!);
+      } else {
+        showMyDialog("Machine Execution Result", "An error occurred");
+      }
+    } else {
+      // get data machine result
+      DataMachineResult dataMachineResult = result.dataMachineResult!;
+      if (dataMachineResult.didCompleteSuccessfulTransaction) {
+        showMyDialog("Machine Execution Result", "Success transaction");
+      } else {
+        showMyDialog("Machine Execution Result", "Failed transaction");
+      }
+    }
   }
 
   @override

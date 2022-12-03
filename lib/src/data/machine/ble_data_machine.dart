@@ -114,6 +114,7 @@ class BleDataMachine extends DataMachine {
   }
 
   /// The start function that asks the machine for the vendor id
+  @override
   void start() {
     // set the flag that the machine has run
     _didRun = true;
@@ -252,13 +253,23 @@ class BleDataMachine extends DataMachine {
     _state = DataMachineProcess.none;
   }
 
-  /// Create a getter for the 'completedSuccessfulTransaction' boolean
-  bool get didCompleteSuccessfulTransaction =>
-      _didCompleteSuccessfulTransaction;
+  @override
+  bool isPlaceholder() {
+    return false;
+  }
 
-  /// Create a getter for the number of retries done
-  int get numberOfRetries => _numOfRetries;
+  @override
+  int getNumOfRetries() {
+    return _numOfRetries;
+  }
 
-  /// Create a getter for the 'didRun' boolean
-  bool get didRun => _didRun;
+  @override
+  bool didCompleteSuccessfulTransaction() {
+    return _didCompleteSuccessfulTransaction;
+  }
+
+  @override
+  bool didRun() {
+    return _didRun;
+  }
 }

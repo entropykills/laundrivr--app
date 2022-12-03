@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 class CscswUtils {
@@ -170,7 +171,7 @@ class CscswUtils {
     if (length + 1 <= src.length - 1) {
       dest = src.sublist(srcPos, length + 2);
     } else {
-      print('Cannot copy items till $length: index out of bound');
+      log('Cannot copy items till $length: index out of bound');
     }
 
     return dest;

@@ -14,5 +14,6 @@ class ContainsFilter extends Filter<String> {
 
 class EndsWithFilter extends Filter<String> {
   EndsWithFilter(String substring)
-      : super((String value) => value.endsWith(substring));
+      : super((String value) =>
+            value.endsWith(substring) && value.isNotEmpty && value.length > 1);
 }
