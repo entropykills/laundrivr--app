@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laundrivr/src/ble/ble_reactive_instance.dart';
 import 'package:laundrivr/src/features/root/root_screen.dart';
+import 'package:laundrivr/src/features/scan_qr/scan_qr_screen.dart';
 import 'package:laundrivr/src/features/sign_in/sign_in_screen.dart';
 import 'package:laundrivr/src/features/splash/splash_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
@@ -26,6 +28,10 @@ class LaundrivrApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     WidgetsFlutterBinding.ensureInitialized();
     // initialize ble
     BleReactiveInstance().ble.initialize();
@@ -44,6 +50,12 @@ class LaundrivrApp extends StatelessWidget {
           bottomNavBarBackgroundColor: const Color(0xff273563),
           brightBadgeBackgroundColor: const Color(0xff479ade),
           pricingGreen: const Color(0xff6EF54C),
+          backButtonBackgroundColor: const Color(0xD9D9D9D9),
+          pinCodeInactiveColor: const Color(0xff546087),
+          pinCodeActiveValidColor: const Color(0xff6EF54C),
+          pinCodeActiveInvalidColor: const Color(
+            0xffFF0000,
+          ),
         )
       ]),
       initialRoute: '/',
@@ -52,6 +64,7 @@ class LaundrivrApp extends StatelessWidget {
         '/signin': (_) => const SignInScreen(),
         '/home': (_) => const RootScreen(), // actually make a home page
         '/number_entry': (_) => const NumberEntryScreen(),
+        '/scan_qr': (_) => const ScanQrScreen(),
       },
     );
   }

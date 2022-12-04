@@ -138,7 +138,9 @@ class _HomeScreenState extends State<HomeScreen> {
             ],
           ),
           child: GestureDetector(
-            onTap: () {},
+            onTap: () {
+              Navigator.pushNamed(context, '/scan_qr');
+            },
             child: Padding(
               padding: const EdgeInsets.all(8.0),
               child: Row(

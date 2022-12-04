@@ -1,16 +1,12 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_alert/flutter_platform_alert.dart';
-import 'package:laundrivr/src/data/adapter/ble_communicator_adapter_reactive.dart';
-import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
-import 'package:loader_overlay/loader_overlay.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
-import '../../data/utils/result/data_machine_result.dart';
+import '../starting/starting_screen.dart';
 
 class NumberEntryScreen extends StatefulWidget {
   const NumberEntryScreen({Key? key}) : super(key: key);
@@ -23,33 +19,10 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
   String _targetDigits = "";
   bool _isTargetDigitsValidValue = false;
 
-  late BleCommunicatorAdapter4 bleAdapterCommunicator =
-      BleCommunicatorAdapter4();
-
   late final StreamSubscription<AuthState> _authStateSubscription;
   final TextEditingController _targetDigitsValidityController =
       TextEditingController();
   bool _redirecting = false;
-
-  Future<void> showMyDialog(String title, String message) async {
-    // if not mounted don't do anything
-    if (!mounted) {
-      return;
-    }
-
-    await FlutterPlatformAlert.showAlert(
-        windowTitle: title,
-        text: message,
-        alertStyle: AlertButtonStyle.ok,
-        iconStyle: IconStyle.information,
-        windowPosition: AlertWindowPosition.screenCenter);
-  }
-
-  void updateShowLoadingSpinner(bool showLoadingSpinner) {
-    showLoadingSpinner
-        ? context.loaderOverlay.show()
-        : context.loaderOverlay.hide();
-  }
 
   Future<void> _backToHome() async {
     // push back to home
@@ -57,12 +30,6 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
   }
 
   void _startBleTransaction() async {
-    // bleAdapterCommunicator.execute(EndsWithFilter(_targetDigits), (result) {
-    //   // display the result message as a dialog
-    //   showMyDialog("Machine Execution Result",
-    //       result.errorMessage != null ? result.errorMessage! : "Success");
-    // });
-
     String targetMachineNameEnding = _targetDigits;
 
     _targetDigitsValidityController.clear();
@@ -71,26 +38,10 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
       _targetDigits = "";
     });
 
-    // start the ble transaction
-    var result = await bleAdapterCommunicator
-        .execute(EndsWithFilter(targetMachineNameEnding));
-
-    if (result.anErrorOccurred) {
-      if (result.associatedErrorMessage != null) {
-        showMyDialog(
-            "Machine Execution Result", result.associatedErrorMessage!);
-      } else {
-        showMyDialog("Machine Execution Result", "An error occurred");
-      }
-    } else {
-      // get data machine result
-      DataMachineResult dataMachineResult = result.dataMachineResult!;
-      if (dataMachineResult.didCompleteSuccessfulTransaction) {
-        showMyDialog("Machine Execution Result", "Success transaction");
-      } else {
-        showMyDialog("Machine Execution Result", "Failed transaction");
-      }
-    }
+    Navigator.of(context).push(MaterialPageRoute(
+        builder: (context) => StartingScreen(
+              targetMachineNameEnding: targetMachineNameEnding,
+            )));
   }
 
   @override
@@ -155,94 +106,113 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
   Widget build(BuildContext context) {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
-    return LoaderOverlay(
-      child: Scaffold(
-        backgroundColor: laundrivrTheme.opaqueBackgroundColor,
-        body: SafeArea(
-          child: Center(
-              child: Column(
-            mainAxisAlignment: MainAxisAlignment.start,
-            children: [
-              const SizedBox(height: 25),
-              Text('Number Entry Screen',
-                  style: laundrivrTheme.primaryTextStyle?.copyWith(
-                    fontWeight: FontWeight.bold,
-                  )),
-              const SizedBox(height: 25),
-              ElevatedButton(
-                  style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 50, vertical: 20),
-                      shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10)),
-                      primary: laundrivrTheme.secondaryOpaqueBackgroundColor,
-                      elevation: 10),
-                  onPressed: _backToHome,
-                  child: Text('Back to home',
-                      style: laundrivrTheme.primaryTextStyle?.copyWith(
-                        fontWeight: FontWeight.w800,
-                        fontSize: 24,
-                      ))),
-              const SizedBox(height: 50),
-              SizedBox(
-                width: 300,
-                child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 200,
-                        child: PinCodeTextField(
-                          controller: _targetDigitsValidityController,
-                          appContext: context,
-                          length: 3,
-                          animationType: AnimationType.scale,
-                          cursorColor: laundrivrTheme.primaryBrightTextColor,
-                          pinTheme: PinTheme(
-                            shape: PinCodeFieldShape.underline,
-                            activeColor: _isTargetDigitsValidValue
-                                ? Colors.green
-                                : Colors.red,
-                            fieldHeight: 50,
-                          ),
-                          animationDuration: const Duration(milliseconds: 300),
-                          validator: (v) {
-                            String output = _validateTargetDigits(v!);
-                            if (output.isEmpty) {
-                              return null;
-                            } else {
-                              return output;
-                            }
-                          },
-                          onChanged: (value) {
-                            setState(() {
-                              _targetDigits = value;
-                            });
-                          },
+    return Scaffold(
+      backgroundColor: laundrivrTheme.opaqueBackgroundColor,
+      body: SafeArea(
+        child: Center(
+            child: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
+          children: [
+            const SizedBox(height: 25),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.start,
+              children: [
+                const SizedBox(width: 25),
+                GestureDetector(
+                  onTap: _backToHome,
+                  child: Container(
+                      decoration: BoxDecoration(
+                          color: laundrivrTheme.backButtonBackgroundColor,
+                          borderRadius:
+                              const BorderRadius.all(Radius.circular(100))),
+                      child: Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Icon(
+                          Icons.arrow_back,
+                          size: 45,
+                          color: laundrivrTheme.opaqueBackgroundColor,
                         ),
+                      )),
+                ),
+              ],
+            ),
+            const SizedBox(height: 50),
+            SizedBox(
+              width: 300,
+              child: Text(
+                "Enter the number on the Laundry Machine",
+                textAlign: TextAlign.center,
+                style: laundrivrTheme.primaryTextStyle!
+                    .copyWith(fontSize: 25, fontWeight: FontWeight.w500),
+              ),
+            ),
+            const SizedBox(height: 50),
+            SizedBox(
+              width: 300,
+              child: Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    SizedBox(
+                      width: 250,
+                      child: PinCodeTextField(
+                        controller: _targetDigitsValidityController,
+                        appContext: context,
+                        length: 3,
+                        animationType: AnimationType.scale,
+                        cursorColor: laundrivrTheme.primaryBrightTextColor,
+                        pinTheme: PinTheme(
+                          shape: PinCodeFieldShape.box,
+                          activeColor: _isTargetDigitsValidValue
+                              ? laundrivrTheme.pinCodeActiveValidColor
+                              : laundrivrTheme.pinCodeActiveInvalidColor,
+                          fieldHeight: 75,
+                          fieldWidth: 60,
+                          inactiveColor: laundrivrTheme.pinCodeInactiveColor,
+                        ),
+                        animationDuration: const Duration(milliseconds: 300),
+                        validator: (v) {
+                          String output = _validateTargetDigits(v!);
+                          if (output.isEmpty) {
+                            return null;
+                          } else {
+                            return output;
+                          }
+                        },
+                        onChanged: (value) {
+                          setState(() {
+                            _targetDigits = value;
+                          });
+                        },
                       ),
-                      const SizedBox(height: 25),
-                      ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 50, vertical: 20),
-                              shape: RoundedRectangleBorder(
-                                  borderRadius: BorderRadius.circular(10)),
-                              primary:
-                                  laundrivrTheme.secondaryOpaqueBackgroundColor,
-                              elevation: 10),
+                    ),
+                    const SizedBox(height: 50),
+                    SizedBox(
+                      width: 320,
+                      height: 75,
+                      child: Container(
+                        decoration: BoxDecoration(
+                          color: laundrivrTheme.brightBadgeBackgroundColor,
+                          borderRadius: BorderRadius.circular(40),
+                        ),
+                        child: TextButton(
                           onPressed: _isTargetDigitsValidValue
                               ? _startBleTransaction
                               : null,
-                          child: Text('Hack Machine',
-                              style: laundrivrTheme.primaryTextStyle?.copyWith(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 24,
-                              ))),
-                    ]),
-              ),
-            ],
-          )),
-        ),
+                          child: Text(
+                            'Start',
+                            style: laundrivrTheme.primaryTextStyle!.copyWith(
+                              color: laundrivrTheme.primaryBrightTextColor,
+                              fontSize: 32,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ]),
+            ),
+          ],
+        )),
       ),
     );
   }

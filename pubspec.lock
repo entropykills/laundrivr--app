@@ -127,6 +127,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.1"
+  floating_bubbles:
+    dependency: "direct main"
+    description:
+      name: floating_bubbles
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.4.0"
   flutter:
     dependency: "direct main"
     description: flutter
@@ -296,6 +303,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "1.0.2"
+  mobile_scanner:
+    dependency: "direct main"
+    description:
+      name: mobile_scanner
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "2.1.0"
   nested:
     dependency: transitive
     description:
@@ -471,6 +485,20 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "0.27.6"
+  sa4_migration_kit:
+    dependency: transitive
+    description:
+      name: sa4_migration_kit
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "1.0.0"
+  simple_animations:
+    dependency: transitive
+    description:
+      name: simple_animations
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "5.0.0+3"
   sky_engine:
     dependency: transitive
     description: flutter

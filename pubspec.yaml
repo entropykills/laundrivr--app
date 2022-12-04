@@ -47,6 +47,8 @@ dependencies:
   flutter_reactive_ble: ^5.0.2
   intl: ^0.17.0
   provider: ^6.0.4
+  mobile_scanner: ^2.1.0
+  floating_bubbles: ^2.4.0
 
 dev_dependencies:
   flutter_test:
@@ -105,3 +107,4 @@ flutter:
     - assets/images/google_logo.svg
     - assets/images/enter-number-icon.svg
     - assets/images/qr-code-scan-icon.svg
+    - assets/images/washing-machine-loading.gif
