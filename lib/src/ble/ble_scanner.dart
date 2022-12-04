@@ -7,15 +7,6 @@ import 'package:laundrivr/src/ble/reactive_state.dart';
 import 'package:meta/meta.dart';
 
 class BleScanner implements ReactiveState<BleScannerState> {
-  /// Make a singleton instance of the BleScanner
-  BleScanner._privateConstructor();
-
-  static final BleScanner _instance = BleScanner._privateConstructor();
-
-  factory BleScanner() {
-    return _instance;
-  }
-
   final FlutterReactiveBle _ble = BleReactiveInstance().ble;
   final void Function(String message) _logMessage = log;
   final StreamController<BleScannerState> _stateStreamController =

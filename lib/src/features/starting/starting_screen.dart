@@ -11,10 +11,10 @@ import '../../data/utils/result/data_machine_result.dart';
 import '../theme/laundrivr_theme.dart';
 
 class StartingScreen extends StatefulWidget {
-  const StartingScreen({Key? key, required this.targetMachineNameEnding})
+  const StartingScreen({Key? key, required this.machineFilter})
       : super(key: key);
 
-  final String targetMachineNameEnding;
+  final Filter<String> machineFilter;
 
   @override
   State<StartingScreen> createState() => _StartingScreenState();
@@ -47,14 +47,13 @@ class _StartingScreenState extends State<StartingScreen> {
         windowPosition: AlertWindowPosition.screenCenter);
   }
 
-  void _executeBleTransaction(String targetMachineNameEnding) async {
+  Future<void> _executeBleTransaction(Filter<String> machineFilter) async {
     // create new ble communicator adapter
     final BleCommunicatorAdapter4 bleCommunicatorAdapter =
         BleCommunicatorAdapter4();
 
     // start the ble transaction
-    var result = await bleCommunicatorAdapter
-        .execute(EndsWithFilter(targetMachineNameEnding));
+    var result = await bleCommunicatorAdapter.execute(machineFilter);
 
     String title = "";
     String message = "";
@@ -79,20 +78,20 @@ class _StartingScreenState extends State<StartingScreen> {
       }
     }
 
-    showDialog(title, message).whenComplete(() => Navigator.of(context).pop());
+    await showDialog(title, message);
   }
 
   @override
   void initState() {
     super.initState();
-    _executeBleTransaction(
-        widget.targetMachineNameEnding // execute the ble transaction
-        );
+    _executeBleTransaction(widget.machineFilter // execute the ble transaction
+            )
+        .then((value) =>
+            Navigator.of(context).popUntil((route) => route.isFirst));
   }
 
   @override
   Widget build(BuildContext context) {
-    final String targetMachineDigits = widget.targetMachineNameEnding;
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
     return Scaffold(

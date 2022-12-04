@@ -8,6 +8,5 @@ abstract class BleAdapter {
 
   void satisfyTransaction(CommunicatorExecutionResult result);
 
-  Future<CommunicatorExecutionResult> execute(
-      EndsWithFilter targetMachineNameEnding);
+  Future<CommunicatorExecutionResult> execute(Filter<String> machineFilter);
 }

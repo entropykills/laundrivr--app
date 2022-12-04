@@ -6,14 +6,14 @@ class Filter<T> {
   bool call(T value) => _filter(value);
 }
 
-// A filter that accepts a string and returns true if the string contains the
-class ContainsFilter extends Filter<String> {
-  ContainsFilter(String substring)
-      : super((String value) => value.contains(substring));
+class ClassicMachineFilter extends Filter<String> {
+  ClassicMachineFilter(String substring)
+      : super((String value) =>
+            value.length == 18 && value.substring(15, 18) == substring);
 }
 
-class EndsWithFilter extends Filter<String> {
-  EndsWithFilter(String substring)
+class OtherMachineFilter extends Filter<String> {
+  OtherMachineFilter(String substring)
       : super((String value) =>
-            value.endsWith(substring) && value.isNotEmpty && value.length > 1);
+            value.length == 18 && value.substring(9, 15) == substring);
 }

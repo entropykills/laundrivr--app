@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:flutter/material.dart';
+import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:pin_code_fields/pin_code_fields.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -40,7 +41,7 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
 
     Navigator.of(context).push(MaterialPageRoute(
         builder: (context) => StartingScreen(
-              targetMachineNameEnding: targetMachineNameEnding,
+              machineFilter: ClassicMachineFilter(targetMachineNameEnding),
             )));
   }
 

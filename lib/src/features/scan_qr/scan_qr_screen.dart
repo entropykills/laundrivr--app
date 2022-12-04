@@ -1,6 +1,9 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
+import 'package:laundrivr/src/data/filter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../qr/QrScannerOverlayShape.dart';
@@ -15,6 +18,8 @@ class ScanQrScreen extends StatefulWidget {
 }
 
 class _ScanQrScreenState extends State<ScanQrScreen> {
+  static final RegExp _qrCodeRegex = RegExp("<(.*?)>");
+
   MobileScannerController cameraController = MobileScannerController(
     formats: [BarcodeFormat.qrCode],
   );
@@ -45,19 +50,52 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
     });
   }
 
+  Future<AlertButton> showDialog(String title, String message) async {
+    return FlutterPlatformAlert.showAlert(
+        windowTitle: title,
+        text: message,
+        alertStyle: AlertButtonStyle.ok,
+        iconStyle: IconStyle.information,
+        windowPosition: AlertWindowPosition.screenCenter);
+  }
+
   void _handleQrDetected(Barcode barcode) {
     if (barcode.rawValue == null) {
       debugPrint('Failed to scan Barcode');
     } else {
-      final String code = barcode.rawValue!;
+      // match regex
+      final matches = _qrCodeRegex.firstMatch(barcode.rawValue!);
+      String? code = matches?.group(1);
+      // if no match
+      if (matches == null || code == null) {
+        showDialog('Unknown QR Code',
+            'We are not sure how to handle this QR code. Please try again.');
+        return;
+      }
 
-      // strip all non-numeric characters
-      final String targetMachineNameEnding = code.replaceAll(RegExp(r'\D'), '');
+      Filter<String> filter;
+      log('Scanned code: ${code}');
+
+      // if the qr code length is 3, the filter for finding the device is the ending digits
+      if (code.length == 3) {
+        filter = ClassicMachineFilter(code);
+      } else if (code.length == 18) {
+        String associatedValue = code.substring(12, 18);
+        filter = OtherMachineFilter(associatedValue);
+      } else if (code.length == 16) {
+        String associatedValue = code.substring(10, 16);
+        filter = OtherMachineFilter(associatedValue);
+      } else {
+        // show dialog saying we aren't sure how to handle this qr code
+        showDialog('Unknown QR Code',
+            'We are not sure how to handle this QR code. Please try again.');
+        return;
+      }
 
       // redirect to the starting screen and pass the code
       Navigator.of(context).push(MaterialPageRoute(
           builder: (context) => StartingScreen(
-                targetMachineNameEnding: targetMachineNameEnding,
+                machineFilter: filter,
               )));
     }
   }
@@ -70,7 +108,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
       _isInCooldown = true;
     });
     Timer(
-        const Duration(seconds: 3),
+        const Duration(seconds: 1),
         () => setState(
             () => _isInCooldown = false)); // cooldown to prevent multiple scans
 

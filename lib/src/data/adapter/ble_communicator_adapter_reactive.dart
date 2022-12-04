@@ -56,15 +56,18 @@ class BleCommunicatorAdapter4 extends BleAdapter {
 
   @override
   Future<CommunicatorExecutionResult> execute(
-      EndsWithFilter targetMachineNameEnding) async {
+      Filter<String> machineFilter) async {
     // tell the scanner to start scanning
     _bleScanner.startScan([]);
 
     // start listening to the scan subscription
     _bleScannerSubscription = _bleScanner.state.listen((event) async {
+      // for loop
+      log("Found # of devices: ${event.discoveredDevices.length}");
+      log("first device name: ${event.discoveredDevices.first.name}");
       List<DiscoveredDevice> discoveredDevices = event.discoveredDevices;
       if (!discoveredDevices
-          .any((element) => targetMachineNameEnding.call(element.name))) {
+          .any((element) => machineFilter.call(element.name))) {
         return;
       }
 
@@ -76,7 +79,7 @@ class BleCommunicatorAdapter4 extends BleAdapter {
 
       // get the target device
       DiscoveredDevice targetDevice = discoveredDevices
-          .firstWhere((element) => targetMachineNameEnding.call(element.name));
+          .firstWhere((element) => machineFilter.call(element.name));
 
       // log that we found a device
       log('Found target device: ${targetDevice.name}, ${targetDevice.id}');
@@ -164,7 +167,7 @@ class BleCommunicatorAdapter4 extends BleAdapter {
       endTransaction();
     }
 
-    return executionResult.future;
+    return executionResult.future.timeout(const Duration(seconds: 30));
   }
 
   @override
@@ -174,48 +177,49 @@ class BleCommunicatorAdapter4 extends BleAdapter {
 
   @override
   void endTransaction() {
-    _cancelAllSubscriptions();
+    _cancelAllSubscriptions().then((value) {
+      if (!_didFindDevice) {
+        satisfyTransaction(CommunicatorExecutionResult(
+          anErrorOccurred: true,
+          laundryMachineWasFound: false,
+          couldConnectToLaundryMachine: false,
+          associatedErrorMessage: "We couldn't find your laundry machine.",
+        ));
+        return;
+      }
 
-    if (!_didFindDevice) {
+      // if the data machine is not a BleDataMachine, throw an error
+      if (_bleDataMachine is! BleDataMachine ||
+          _bleDataMachine.isPlaceholder()) {
+        // satisfy the future with an error
+        satisfyTransaction(CommunicatorExecutionResult(
+          anErrorOccurred: true,
+          laundryMachineWasFound: false,
+          couldConnectToLaundryMachine: false,
+          associatedErrorMessage: 'Could not find the device',
+        ));
+        return;
+      }
+
+      // get the result from the data machine
+      bool didCompleteSuccessfulTransaction =
+          _bleDataMachine.didCompleteSuccessfulTransaction();
+      int numberOfRetries = _bleDataMachine.getNumOfRetries();
+
+      // construct the result
+      DataMachineResult result = DataMachineResult(
+        numberOfRetries,
+        didCompleteSuccessfulTransaction,
+      );
+
+      // return the result
       satisfyTransaction(CommunicatorExecutionResult(
-        anErrorOccurred: true,
-        laundryMachineWasFound: false,
-        couldConnectToLaundryMachine: false,
-        associatedErrorMessage: "We couldn't find your laundry machine.",
+        anErrorOccurred: false,
+        laundryMachineWasFound: true,
+        couldConnectToLaundryMachine: true,
+        dataMachineResult: result,
       ));
-      return;
-    }
-
-    // if the data machine is not a BleDataMachine, throw an error
-    if (_bleDataMachine is! BleDataMachine || _bleDataMachine.isPlaceholder()) {
-      // satisfy the future with an error
-      satisfyTransaction(CommunicatorExecutionResult(
-        anErrorOccurred: true,
-        laundryMachineWasFound: false,
-        couldConnectToLaundryMachine: false,
-        associatedErrorMessage: 'Could not find the device',
-      ));
-      return;
-    }
-
-    // get the result from the data machine
-    bool didCompleteSuccessfulTransaction =
-        _bleDataMachine.didCompleteSuccessfulTransaction();
-    int numberOfRetries = _bleDataMachine.getNumOfRetries();
-
-    // construct the result
-    DataMachineResult result = DataMachineResult(
-      numberOfRetries,
-      didCompleteSuccessfulTransaction,
-    );
-
-    // return the result
-    satisfyTransaction(CommunicatorExecutionResult(
-      anErrorOccurred: false,
-      laundryMachineWasFound: true,
-      couldConnectToLaundryMachine: true,
-      dataMachineResult: result,
-    ));
+    });
   }
 
   @override
@@ -232,32 +236,39 @@ class BleCommunicatorAdapter4 extends BleAdapter {
     }
   }
 
-  void _cancelAllSubscriptions() {
+  Future<void> _cancelAllSubscriptions() async {
     // log that we are cancelling all subscriptions
     log('Cancelling all subscriptions');
     try {
-      _bleScanner.stopScan();
+      await _bleScanner.stopScan();
     } catch (e) {
       log('Error while stopping scan: $e');
     }
 
     try {
-      _bleScannerSubscription.cancel();
+      await _bleScanner.dispose();
+    } catch (e) {
+      log('Error while disposing scanner: $e');
+    }
+    try {
+      await _bleScannerSubscription.cancel();
     } catch (e) {
       // ignore
     }
 
     try {
-      _bleConnectionStateSubscription.cancel();
+      await _bleConnectionStateSubscription.cancel();
     } catch (e) {
       // ignore
     }
 
     try {
-      _bleCharacteristicNotificationSubscription.cancel();
+      await _bleCharacteristicNotificationSubscription.cancel();
     } catch (e) {
       // ignore
     }
+
+    return;
   }
 
   void dispose() {

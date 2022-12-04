@@ -68,21 +68,27 @@ class BleDataMachine extends DataMachine {
     log("Constructed full packet (ascii): ${packet.map((e) => e.toRadixString(16)).join(" ")}");
 
     // based on the state, call the appropriate function in a case switch
-    switch (_state) {
-      case DataMachineProcess.start:
-        break;
-      case DataMachineProcess.vendorId:
-        _processVendorId(packet);
-        break;
-      case DataMachineProcess.getPrice:
-        _processGetPrice(packet);
-        break;
-      case DataMachineProcess.startCycleExtend:
-        _processStartExtend(packet);
-        break;
-      case DataMachineProcess.none:
-        // TODO: Handle this case.
-        break;
+    try {
+      switch (_state) {
+        case DataMachineProcess.start:
+          break;
+        case DataMachineProcess.vendorId:
+          _processVendorId(packet);
+          break;
+        case DataMachineProcess.getPrice:
+          _processGetPrice(packet);
+          break;
+        case DataMachineProcess.startCycleExtend:
+          _processStartExtend(packet);
+          break;
+        case DataMachineProcess.none:
+          // TODO: Handle this case.
+          break;
+      }
+    } catch (e) {
+      // if an error occurs, log it
+      log("Error occurred: $e");
+      _callForDisconnect();
     }
   }
 
@@ -101,8 +107,6 @@ class BleDataMachine extends DataMachine {
     }
     // increment the number of retries
     _numOfRetries++;
-    // log that we are retrying the price request
-    log("\n\nERROR: RETRYING\n\n");
     // reset the state
     _state = DataMachineProcess.start;
 
