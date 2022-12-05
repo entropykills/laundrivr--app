@@ -19,7 +19,6 @@ samples, guidance on mobile development, and a full API reference.
 <div flex-direction="row">
 <img src="https://i.imgur.com/ytzD8OB.png" width="200"/>
 <img src="https://i.imgur.com/CYjgbhY.png" width="200"/>
-<img src="https://i.imgur.com/CYjgbhY.png" width="200"/>
 <img src="https://i.imgur.com/PrK8H3S.png" width="200"/>
 <img src="https://i.imgur.com/0mlBWt3.png" width="200"/>
 </div>
