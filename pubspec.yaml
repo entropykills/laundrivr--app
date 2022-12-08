@@ -110,7 +110,6 @@ flutter:
     - assets/images/qr-code-scan-icon.svg
     - assets/images/washing-machine-loading.gif
     - assets/images/laundrivr_app_logo.png
-    -
 flutter_icons:
   android: "launcher_icon"
   ios: true
