@@ -1,13 +1,13 @@
 class PurchasablePackage {
-  String name;
-  String price;
-  int numberOfLoads;
+  String displayName;
+  int price;
+  int userReceivedLoads;
   String handle;
 
   PurchasablePackage({
-    required this.name,
+    required this.displayName,
     required this.price,
-    required this.numberOfLoads,
+    required this.userReceivedLoads,
     required this.handle,
   });
 }

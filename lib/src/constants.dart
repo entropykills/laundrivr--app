@@ -13,6 +13,9 @@ abstract class Constants {
     'SUPABASE_ANON_KEY',
     defaultValue: '',
   );
+
+  static const String supabasePurchasablePackagesTableName =
+      "purchasable_packages";
 }
 
 extension ShowSnackBar on BuildContext {
