@@ -57,6 +57,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "2.9.0"
+  auto_size_text:
+    dependency: "direct main"
+    description:
+      name: auto_size_text
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "3.0.0"
   back_button_interceptor:
     dependency: transitive
     description:
@@ -555,6 +562,13 @@ packages:
       url: "https://pub.dartlang.org"
     source: hosted
     version: "5.0.0+3"
+  skeletons:
+    dependency: "direct main"
+    description:
+      name: skeletons
+      url: "https://pub.dartlang.org"
+    source: hosted
+    version: "0.0.3"
   sky_engine:
     dependency: transitive
     description: flutter

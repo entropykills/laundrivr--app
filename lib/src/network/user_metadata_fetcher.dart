@@ -23,7 +23,7 @@ class UserMetadataFetcher {
   UserMetadata _metadata = UnloadedUserMetadata();
 
   /// Cooldown for fetching metadata
-  static const Duration _cooldown = Duration(seconds: 5);
+  static const Duration _cooldown = Duration(minutes: 1);
 
   /// Last time metadata was fetched
   DateTime _lastFetch = DateTime.now().subtract(_cooldown);
@@ -44,7 +44,7 @@ class UserMetadataFetcher {
     }
 
     // check if the metadata is already being fetched
-    if (_isFetching && !force) {
+    if (_isFetching) {
       // return the cached metadata
       return _metadata;
     }

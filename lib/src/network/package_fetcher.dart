@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:developer';
 
 import 'package:laundrivr/src/constants.dart';
 import 'package:laundrivr/src/model/packages/package_repository.dart';
@@ -25,7 +24,7 @@ class PackageFetcher {
   PackageRepository _packages = UnloadedPackageRepository();
 
   /// Cooldown for fetching packages
-  static const Duration _cooldown = Duration(seconds: 5);
+  static const Duration _cooldown = Duration(minutes: 1);
 
   /// Last time packages were fetched
   DateTime _lastFetch = DateTime.now().subtract(_cooldown);
@@ -39,7 +38,6 @@ class PackageFetcher {
 
   /// Fetches the packages from the database
   Future<PackageRepository> fetchPackages({bool force = false}) async {
-    log('Fetching packages');
     // check if the cooldown has passed
     if (DateTime.now().difference(_lastFetch) < _cooldown && !force) {
       // return the cached packages

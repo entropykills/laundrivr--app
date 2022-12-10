@@ -14,9 +14,11 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
+  static const String email = 'help@laundrivr.com';
+
   static final Uri emailLaunchUri = Uri(
     scheme: 'mailto',
-    path: 'help@laundrivr.com',
+    path: email,
   );
 
   static final Uri privacyPolicyUri = Uri(
@@ -61,6 +63,11 @@ class _MoreScreenState extends State<MoreScreen> {
 
   void _launchURL(Uri uri) async {
     if (!await launchUrl(uri)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text('Oops! Something went wrong. Email us at $email'),
+        ),
+      );
       throw 'Could not launch $uri';
     }
   }
