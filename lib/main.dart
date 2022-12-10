@@ -7,6 +7,8 @@ import 'package:laundrivr/src/features/scan_qr/scan_qr_screen.dart';
 import 'package:laundrivr/src/features/sign_in/sign_in_screen.dart';
 import 'package:laundrivr/src/features/splash/splash_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
+import 'package:laundrivr/src/network/package_fetcher.dart';
+import 'package:laundrivr/src/network/user_metadata_fetcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import 'src/constants.dart';
@@ -19,6 +21,11 @@ Future<void> main() async {
     url: Constants.supabaseUrl,
     anonKey: Constants.supabaseAnonKey,
   );
+
+  // fetch user metadata
+  UserMetadataFetcher().fetchMetadata();
+  // fetch packages
+  PackageFetcher().fetchPackages();
 
   runApp(const LaundrivrApp());
 }
@@ -35,6 +42,7 @@ class LaundrivrApp extends StatelessWidget {
     WidgetsFlutterBinding.ensureInitialized();
     // initialize ble
     BleReactiveInstance().ble.initialize();
+
     return MaterialApp(
       title: 'Laundrivr',
       theme: ThemeData.dark().copyWith(extensions: <ThemeExtension<dynamic>>[

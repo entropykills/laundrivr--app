@@ -16,6 +16,8 @@ abstract class Constants {
 
   static const String supabasePurchasablePackagesTableName =
       "purchasable_packages";
+
+  static const String supabaseUserMetadataTableName = "user_metadata";
 }
 
 extension ShowSnackBar on BuildContext {

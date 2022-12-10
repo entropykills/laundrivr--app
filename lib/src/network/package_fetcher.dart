@@ -1,5 +1,10 @@
+import 'dart:async';
+import 'dart:developer';
+
 import 'package:laundrivr/src/constants.dart';
+import 'package:laundrivr/src/model/packages/package_repository.dart';
 import 'package:laundrivr/src/model/packages/purchasable_package.dart';
+import 'package:laundrivr/src/model/packages/unloaded_package_repository.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../model/packages/package_constructor.dart';
@@ -17,12 +22,44 @@ class PackageFetcher {
   PackageFetcher._internal();
 
   // create a cache of packages
-  List<PurchasablePackage> _packages = [];
+  PackageRepository _packages = UnloadedPackageRepository();
+
+  /// Cooldown for fetching packages
+  static const Duration _cooldown = Duration(seconds: 5);
+
+  /// Last time packages were fetched
+  DateTime _lastFetch = DateTime.now().subtract(_cooldown);
+
+  /// Whether the packages are currently being fetched
+  bool _isFetching = false;
+
+  // create a subscription broadcast stream
+  final StreamController<PackageRepository> _streamController =
+      StreamController.broadcast();
 
   /// Fetches the packages from the database
-  Future<List<PurchasablePackage>> fetchPackages() async {
+  Future<PackageRepository> fetchPackages({bool force = false}) async {
+    log('Fetching packages');
+    // check if the cooldown has passed
+    if (DateTime.now().difference(_lastFetch) < _cooldown && !force) {
+      // return the cached packages
+      return _packages;
+    }
+
+    // check if the packages are already being fetched
+    if (_isFetching && !force) {
+      // return the cached packages
+      return _packages;
+    }
+
+    // set the last fetch time
+    _lastFetch = DateTime.now();
+
+    // set the fetching state
+    _isFetching = true;
+
     // if the cache is empty, fetch the packages
-    if (_packages.isEmpty) {
+    if (_packages is UnloadedPackageRepository) {
       // fetch the packages with supabase
       try {
         final data = (await supabase
@@ -40,23 +77,39 @@ class PackageFetcher {
           packages.add(constructed);
         }
 
+        // sort the packages by price
+        packages.sort((a, b) => a.price.compareTo(b.price));
+
         // set the cache to the packages
-        _packages = packages;
+        _packages = PackageRepository(packages: packages);
       } on PostgrestException catch (_) {
         // return an empty list if there is an error
         // reset the cache
-        _packages = [];
+        _packages = UnloadedPackageRepository();
       } catch (error) {
         // return an empty list if there is an error
         // reset the cache
-        _packages = [];
+        _packages = UnloadedPackageRepository();
       }
     }
+
+    // reset the fetching state
+    _isFetching = false;
+
+    // add the packages to the stream
+    _streamController.add(_packages);
+
     // return the packages
     return _packages;
   }
 
+  /// Clears the cache
   void clearCache() {
-    _packages = [];
+    _packages = UnloadedPackageRepository();
+    // update the subscription
+    _streamController.add(_packages);
   }
+
+  /// Returns a stream of package repositories
+  Stream<PackageRepository> get stream => _streamController.stream;
 }

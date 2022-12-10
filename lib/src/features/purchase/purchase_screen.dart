@@ -1,8 +1,12 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
+import 'package:laundrivr/src/model/packages/unloaded_package_repository.dart';
 import 'package:laundrivr/src/network/package_fetcher.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:url_launcher/url_launcher.dart';
 
+import '../../model/packages/package_repository.dart';
 import '../../model/packages/purchasable_package.dart';
 import '../../network/checkout_link_fetcher.dart';
 import '../theme/laundrivr_theme.dart';
@@ -15,44 +19,51 @@ class PurchaseScreen extends StatefulWidget {
 }
 
 class _PurchaseScreenState extends State<PurchaseScreen> {
-  // get the package fetcher
-  static final PackageFetcher _packageFetcher = PackageFetcher();
+  /// Create a subscription for the broadcast stream for the packages
+  StreamSubscription<PackageRepository>? _packageSubscription;
 
-  // get the checkout link fetcher
-  static final CheckoutLinkFetcher _checkoutLinkFetcher = CheckoutLinkFetcher();
-
-  bool _isLoadingPackages = true;
-  late List<PurchasablePackage> _packages = [];
-
-  bool _isLoadingCheckoutLink = false;
+  /// Package repository
+  PackageRepository _packages = UnloadedPackageRepository();
 
   @override
   void initState() {
     super.initState();
-    _refresh(false);
-  }
 
-  Future<void> _refresh(bool clearCache) async {
-    if (clearCache) {
-      _packageFetcher.clearCache();
-    }
-
-    // set the loading state
-    setState(() {
-      _isLoadingPackages = true;
+    // subscribe to the broadcast stream for the packages
+    _packageSubscription = PackageFetcher().stream.listen((packages) {
+      // set the state
+      setState(() {
+        _packages = packages;
+      });
     });
 
-    // use the package fetcher to get the packages
-    List<PurchasablePackage> data = await _packageFetcher.fetchPackages();
-    // sort the packages by price
-    data.sort((a, b) => a.price.compareTo(b.price));
+    // initialize the packages
+    _initializePackages();
+  }
 
-    // set the states
+  @override
+  void dispose() {
+    // cancel the subscription
+    _packageSubscription?.cancel();
+    super.dispose();
+  }
+
+  void _initializePackages() async {
+    // fetch the packages
+    var packages = await PackageFetcher().fetchPackages();
     setState(() {
-      _isLoadingPackages = false;
-      _packages = data;
+      _packages = packages;
     });
   }
+
+  Future<void> _refreshPackages() async {
+    // refresh the packages
+    PackageFetcher().clearCache();
+    await PackageFetcher().fetchPackages(force: true);
+  }
+
+  // get the checkout link fetcher
+  static final CheckoutLinkFetcher _checkoutLinkFetcher = CheckoutLinkFetcher();
 
   void _fetchAndOpenCheckoutLink(PurchasablePackage purchasablePackage) async {
     // show the loading overlay
@@ -86,11 +97,11 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
     return RefreshIndicator(
-      onRefresh: () => _refresh(true),
+      onRefresh: () => _refreshPackages(),
       child: Center(
           child:
               // if the packages are loading, show a loading indicator
-              _isLoadingPackages
+              _packages is UnloadedPackageRepository
                   ? const CircularProgressIndicator()
                   // create a single child scroll view row for the purchase items, with
                   // a spacer in between each purchase item
@@ -99,7 +110,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                       child: Column(
                         children: [
                           // if there are no packages, show a message
-                          if (_packages.isEmpty)
+                          if (_packages is UnloadedPackageRepository)
                             Text(
                               'No packages available',
                               style: laundrivrTheme.primaryTextStyle!.copyWith(
@@ -108,7 +119,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                             )
                           else
                             // sort the packages by price
-                            for (final purchasablePackage in _packages)
+                            for (final purchasablePackage in _packages.packages)
                               Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Stack(
