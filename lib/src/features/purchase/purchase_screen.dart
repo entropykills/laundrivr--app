@@ -4,7 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:laundrivr/src/model/packages/unloaded_package_repository.dart';
 import 'package:laundrivr/src/network/package_fetcher.dart';
 import 'package:loader_overlay/loader_overlay.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../../model/packages/package_repository.dart';
 import '../../model/packages/purchasable_package.dart';
@@ -72,10 +72,11 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
       // get the checkout link
       String checkoutLink =
           await _checkoutLinkFetcher.fetchCheckoutLink(purchasablePackage);
-      // remove any issues with the link and encode it
-      String encodedCheckoutLink = Uri.encodeFull(checkoutLink);
+      if (!(await canLaunchUrlString(checkoutLink))) {
+        throw Exception('Cannot launch $checkoutLink');
+      }
       // open the checkout link in the browser
-      launchUrl(Uri.parse(encodedCheckoutLink));
+      await launchUrlString(checkoutLink);
     } catch (e) {
       // if there is an error, show a snackbar
       if (mounted) {

@@ -91,6 +91,13 @@ class UserMetadataFetcher {
     return _metadata;
   }
 
+  void updateMetadata(UserMetadata metadata) {
+    // update the cache
+    _metadata = metadata;
+    // update the subscription
+    _streamController.add(_metadata);
+  }
+
   /// Clears the cache
   void clearCache() {
     _metadata = UnloadedUserMetadata();

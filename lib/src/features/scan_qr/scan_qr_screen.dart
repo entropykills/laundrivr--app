@@ -29,6 +29,8 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
 
   bool _isInCooldown = false;
 
+  bool _tryingToNavigateAway = false;
+
   Future<void> _backToHome() async {
     // push back to home
     Navigator.of(context).pop();
@@ -59,7 +61,10 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         windowPosition: AlertWindowPosition.screenCenter);
   }
 
-  void _handleQrDetected(Barcode barcode) {
+  void _handleQrDetected(Barcode barcode) async {
+    if (_tryingToNavigateAway) {
+      return;
+    }
     if (barcode.rawValue == null) {
       debugPrint('Failed to scan Barcode');
     } else {
@@ -92,11 +97,21 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         return;
       }
 
-      // redirect to the starting screen and pass the code
-      Navigator.of(context).push(MaterialPageRoute(
-          builder: (context) => StartingScreen(
-                machineFilter: filter,
-              )));
+      // disable scanning so we don't keep getting the same code
+      // even after navigating away (issue #1)
+      await cameraController.stop();
+      // set the navigation flag
+      _tryingToNavigateAway = true;
+
+      if (mounted) {
+        // redirect to the starting screen and pass the code
+        Navigator.of(context).push(MaterialPageRoute(
+            builder: (context) => StartingScreen(
+                  machineFilter: filter,
+                )));
+      } else {
+        log('Tried to navigate to starting screen, but the widget was not mounted');
+      }
     }
   }
 

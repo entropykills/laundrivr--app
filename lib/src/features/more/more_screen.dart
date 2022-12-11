@@ -2,7 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:package_info_plus/package_info_plus.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 
 import '../theme/laundrivr_theme.dart';
 
@@ -16,25 +16,13 @@ class MoreScreen extends StatefulWidget {
 class _MoreScreenState extends State<MoreScreen> {
   static const String email = 'help@laundrivr.com';
 
-  static final Uri emailLaunchUri = Uri(
-    scheme: 'mailto',
-    path: email,
-  );
+  static const String emailLaunchUrl = 'mailto:$email';
 
-  static final Uri privacyPolicyUri = Uri(
-    scheme: 'https',
-    path: 'laundrivr.com/privacy',
-  );
+  static const String privacyPolicyUrl = 'https://laundrivr.com/privacy';
 
-  static final Uri termsOfUseUri = Uri(
-    scheme: 'https',
-    path: 'laundrivr.com/terms',
-  );
+  static const String termsOfUseUrl = "https://laundrivr.com/terms";
 
-  static final Uri websiteUri = Uri(
-    scheme: 'https',
-    path: 'laundrivr.com',
-  );
+  static const String websiteUrl = "https://laundrivr.com";
 
   bool _loadingPackageInfo = true;
 
@@ -61,14 +49,17 @@ class _MoreScreenState extends State<MoreScreen> {
     super.initState();
   }
 
-  void _launchURL(Uri uri) async {
-    if (!await launchUrl(uri)) {
+  void _launchURL(String url) async {
+    if (!(await canLaunchUrlString(url))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
           content: Text('Oops! Something went wrong. Email us at $email'),
         ),
       );
-      throw 'Could not launch $uri';
+    }
+
+    if (!await launchUrlString(url)) {
+      throw 'Could not launch $url';
     }
   }
 
@@ -124,7 +115,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(privacyPolicyUri);
+                        _launchURL(privacyPolicyUrl);
                       },
                       child: Text(
                         'Privacy Policy',
@@ -150,7 +141,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(termsOfUseUri);
+                        _launchURL(termsOfUseUrl);
                       },
                       child: Text(
                         'Terms of Use',
@@ -176,7 +167,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(websiteUri);
+                        _launchURL(websiteUrl);
                       },
                       child: Text(
                         'Visit the Website',
@@ -219,7 +210,7 @@ class _MoreScreenState extends State<MoreScreen> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            _launchURL(emailLaunchUri);
+                            _launchURL(emailLaunchUrl);
                           }),
                   ),
                 ],

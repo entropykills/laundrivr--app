@@ -8,6 +8,7 @@ import 'package:flutter_svg/svg.dart';
 import '../../data/adapter/ble_communicator_adapter_reactive.dart';
 import '../../data/filter.dart';
 import '../../data/utils/result/data_machine_result.dart';
+import '../../network/user_metadata_updater.dart';
 import '../theme/laundrivr_theme.dart';
 
 class StartingScreen extends StatefulWidget {
@@ -21,6 +22,8 @@ class StartingScreen extends StatefulWidget {
 }
 
 class _StartingScreenState extends State<StartingScreen> {
+  static final UserMetadataUpdater _userMetadataUpdater = UserMetadataUpdater();
+
   // list of different loading messages
   static const List<String> loadingMessages = [
     "Connecting you to a freshly washed future!",
@@ -72,6 +75,9 @@ class _StartingScreenState extends State<StartingScreen> {
       if (dataMachineResult.didCompleteSuccessfulTransaction) {
         title = "Started your laundry!";
         message = "Your laundry load has been started.";
+
+        // subtract 1 from the user's remaining load count
+        await _userMetadataUpdater.subtractOneLoad();
       } else {
         title = "Something went wrong.";
         message = "The start button was not pressed.";
