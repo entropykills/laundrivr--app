@@ -44,11 +44,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _initializeMetadata() async {
-    // fetch the metadata
-    var metadata = await UserMetadataFetcher().fetchMetadata();
-    setState(() {
-      _userMetadata = metadata;
-    });
+    // re-fetch the metadata if it's not loaded (issue #4)
+    if (_userMetadata is UnloadedUserMetadata) {
+      _refreshUserMetadata();
+    }
   }
 
   Future<void> _refreshUserMetadata() async {

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
+import 'package:laundrivr/src/network/user_metadata_fetcher.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
@@ -21,6 +22,9 @@ class _SignInScreenState extends State<SignInScreen> {
   @override
   void initState() {
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
+      // clear the cache for metadata
+      UserMetadataFetcher().clearCache();
+
       if (_redirecting) return;
       final session = data.session;
       if (session != null) {
