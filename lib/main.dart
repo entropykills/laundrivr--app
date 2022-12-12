@@ -86,9 +86,9 @@ class LaundrivrApp extends StatelessWidget {
         ]),
         initialRoute: '/',
         routes: <String, WidgetBuilder>{
-          '/': (_) => const SplashScreen(), // rename to splash screen
+          '/': (_) => const SplashScreen(),
           '/signin': (_) => const SignInScreen(),
-          '/home': (_) => const RootScreen(), // actually make a home page
+          '/home': (_) => const RootScreen(),
           '/number_entry': (_) => const NumberEntryScreen(),
           '/scan_qr': (_) => const ScanQrScreen(),
         },

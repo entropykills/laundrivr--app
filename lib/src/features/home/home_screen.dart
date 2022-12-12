@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:laundrivr/src/model/user/unloaded_user_metadata.dart';
@@ -73,15 +74,40 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  Future<AlertButton> showDialog(String title, String message) async {
+    return FlutterPlatformAlert.showAlert(
+        windowTitle: title,
+        text: message,
+        alertStyle: AlertButtonStyle.ok,
+        iconStyle: IconStyle.information,
+        windowPosition: AlertWindowPosition.screenCenter);
+  }
+
+  bool _canStartALoad() {
+    return _userMetadata is! UnloadedUserMetadata &&
+        (_userMetadata.loadsAvailable > 0 ||
+            _userMetadata.loadsAvailable == -1);
+  }
+
   @override
   Widget build(BuildContext context) {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
     // get the user from supabase
     final user = supabase.auth.currentUser!;
-    String name = user.userMetadata?.entries
-        .firstWhere((element) => element.key == 'name')
-        .value;
+    String name;
+    if (user.userMetadata != null && user.userMetadata!.containsKey("name")) {
+      name = user.userMetadata!.entries
+          .firstWhere((element) => element.key == "name")
+          .value;
+    } else {
+      if (user.email != null) {
+        name = user.email!.split("@")[0];
+      } else {
+        name = "Your Account";
+      }
+    }
+
     return RefreshIndicator(
       onRefresh: () => _refreshUserMetadata(),
       child: CustomScrollView(
@@ -143,54 +169,51 @@ class _HomeScreenState extends State<HomeScreen> {
                       borderRadius: BorderRadius.circular(40),
                     ),
                   ),
-                  child: GestureDetector(
-                    onTap: () => _refreshUserMetadata(),
-                    child: Container(
-                      width: 320,
-                      height: 220,
-                      // rounded
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: laundrivrTheme.tertiaryOpaqueBackgroundColor,
-                        // add box shadow
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
-                            spreadRadius: 2,
-                            blurRadius: 20,
-                            offset: const Offset(
-                                2, 2), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20),
-                              child: AutoSizeText(
-                                _userMetadata.loadsAvailable.toString(),
-                                maxLines: 1,
-                                style:
-                                    laundrivrTheme.primaryTextStyle!.copyWith(
-                                  fontSize: 120,
-                                  fontWeight: FontWeight.w800,
-                                  color: laundrivrTheme.goldenTextColor,
-                                ),
+                  child: Container(
+                    width: 320,
+                    height: 220,
+                    // rounded
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(40),
+                      color: laundrivrTheme.tertiaryOpaqueBackgroundColor,
+                      // add box shadow
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.4),
+                          spreadRadius: 2,
+                          blurRadius: 20,
+                          offset:
+                              const Offset(2, 2), // changes position of shadow
+                        ),
+                      ],
+                    ),
+                    child: Padding(
+                      padding: const EdgeInsets.only(bottom: 20),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.only(left: 20, right: 20),
+                            child: AutoSizeText(
+                              _userMetadata.loadsAvailable == -1
+                                  ? '\u{221E}'
+                                  : _userMetadata.loadsAvailable.toString(),
+                              maxLines: 1,
+                              style: laundrivrTheme.primaryTextStyle!.copyWith(
+                                fontSize: 120,
+                                fontWeight: FontWeight.w800,
+                                color: laundrivrTheme.goldenTextColor,
                               ),
                             ),
-                            Text(
-                              'Loads Available',
-                              style: laundrivrTheme.primaryTextStyle!.copyWith(
-                                fontSize: 30,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            )
-                          ],
-                        ),
+                          ),
+                          Text(
+                            'Loads Available',
+                            style: laundrivrTheme.primaryTextStyle!.copyWith(
+                              fontSize: 30,
+                              fontWeight: FontWeight.w900,
+                            ),
+                          )
+                        ],
                       ),
                     ),
                   ),
@@ -215,6 +238,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: GestureDetector(
                     onTap: () {
+                      // check if the user data is loaded and if the user has loads available
+                      if (!_canStartALoad()) {
+                        showDialog('Oops!', 'You have no loads available!');
+                        return;
+                      }
                       Navigator.pushNamed(context, '/scan_qr');
                     },
                     child: Padding(
@@ -259,6 +287,11 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: GestureDetector(
                     onTap: () {
+                      // check if the user data is loaded and if the user has loads available
+                      if (!_canStartALoad()) {
+                        showDialog('Oops!', 'You have no loads available!');
+                        return;
+                      }
                       Navigator.pushNamed(context, '/number_entry');
                     },
                     child: Padding(
