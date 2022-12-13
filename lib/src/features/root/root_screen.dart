@@ -59,8 +59,7 @@ class _RootScreenState extends State<RootScreen> {
     setState(() {
       _selectedIndex = index;
       _pageController.animateToPage(index,
-          duration: const Duration(milliseconds: 850),
-          curve: Curves.fastLinearToSlowEaseIn);
+          duration: const Duration(milliseconds: 600), curve: Curves.ease);
     });
   }
 

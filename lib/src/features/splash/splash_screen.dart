@@ -43,9 +43,8 @@ class _SplashScreenState extends State<SplashScreen> {
       backgroundColor: laundrivrTheme.opaqueBackgroundColor,
       body: const SafeArea(
           child: Center(
-              child: CircularProgressIndicator(
-        color: Colors.white,
-      ))),
+              child: SizedBox(
+                  height: 50, width: 50, child: CircularProgressIndicator()))),
     );
   }
 }

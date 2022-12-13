@@ -67,16 +67,20 @@ class _MoreScreenState extends State<MoreScreen> {
   Widget build(BuildContext context) {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
-    return Center(
-      child: Padding(
-        padding: const EdgeInsets.only(top: 50),
+    return LayoutBuilder(builder: (context, constraints) {
+      return Padding(
+        padding: EdgeInsets.only(top: constraints.maxHeight < 600 ? 20 : 50),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            SvgPicture.asset("assets/images/laundrivr_logo+text_golden.svg",
-                semanticsLabel: 'Laundrivr Logo', width: 200, height: 200),
-            const SizedBox(
-              height: 25,
+            SvgPicture.asset(
+              "assets/images/laundrivr_logo+text_golden.svg",
+              semanticsLabel: 'Laundrivr Logo',
+              width: constraints.maxWidth < 400 ? 110 : 200,
+              height: constraints.maxWidth < 400 ? 110 : 200,
+            ),
+            SizedBox(
+              height: constraints.maxHeight < 600 ? 10 : 20,
             ),
             Column(
               children: [
@@ -219,7 +223,7 @@ class _MoreScreenState extends State<MoreScreen> {
             // version info from pubspec.yaml
           ],
         ),
-      ),
-    );
+      );
+    });
   }
 }
