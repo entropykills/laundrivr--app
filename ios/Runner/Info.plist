@@ -47,13 +47,13 @@
 	<key>NSBluetoothPeripheralUsageDescription</key>
 	<string>Our app uses bluetooth to find, connect and transfer data between different devices</string>
 	<key>NSCameraUsageDescription</key>
-	<string>Access your device's camera</string>
+	<string>Allow access to your device's camera to scan the QR code on the front of your laundry machine.</string>
 	<key>NSLocationAlwaysAndWhenInUseUsageDescription</key>
-	<string>Our app uses location services to know where this device is</string>
+	<string>Turning on location services allows us to understand what laundry room you are standing in.</string>
 	<key>NSLocationAlwaysUsageDescription</key>
-	<string>Our app uses location services to know where this device is</string>
+	<string>Turning on location services allows us to understand what laundry room you are standing in.</string>
 	<key>NSLocationWhenInUseUsageDescription</key>
-	<string>Our app uses location services to know where this device is</string>
+	<string>Turning on location services allows us to understand what laundry room you are standing in.</string>
 	<key>UILaunchStoryboardName</key>
 	<string>LaunchScreen</string>
 	<key>UIMainStoryboardFile</key>
