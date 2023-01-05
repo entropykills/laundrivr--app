@@ -1,9 +1,12 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
+import 'package:laundrivr/src/network/sign_in_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:url_launcher/url_launcher.dart';
 
 import '../../constants.dart';
 import '../../network/user_metadata_fetcher.dart';
@@ -28,6 +31,7 @@ class _SignInScreenState extends State<SignInScreen> {
       if (_redirecting) return;
       final session = data.session;
       if (session != null) {
+        closeInAppWebView();
         _redirecting = true;
         Navigator.of(context).pushReplacementNamed('/home');
       }
@@ -43,23 +47,20 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _signInWithGoogle() async {
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        Provider.google,
-        redirectTo: 'com.laundrivr.laundrivr://login-callback',
-      );
+      await SignInProvider().customSignInWithOAuth(Provider.google,
+          redirectTo: "com.laundrivr.laundrivr://login-callback/");
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
+      log(error.toString());
       context.showErrorSnackBar(message: 'Unexpected error occurred');
     }
   }
 
   Future<void> _signInWithApple() async {
     try {
-      await Supabase.instance.client.auth.signInWithOAuth(
-        Provider.apple,
-        redirectTo: 'com.laundrivr.laundrivr://login-callback',
-      );
+      await SignInProvider().customSignInWithOAuth(Provider.apple,
+          redirectTo: "com.laundrivr.laundrivr://login-callback/");
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
