@@ -65,7 +65,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _signOut() async {
     try {
-      await supabase.auth.signOut();
+      supabase.auth.signOut();
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
@@ -93,7 +93,13 @@ class _HomeScreenState extends State<HomeScreen> {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
     // get the user from supabase
-    final user = supabase.auth.currentUser!;
+    final User? user = supabase.auth.currentUser;
+
+    // if the user is null, redirect to the sign in screen (show blank screen)
+    if (user == null) {
+      return const Scaffold();
+    }
+
     String name;
     if (user.userMetadata != null && user.userMetadata!.containsKey("name")) {
       name = user.userMetadata!.entries

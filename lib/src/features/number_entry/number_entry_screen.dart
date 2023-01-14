@@ -108,6 +108,7 @@ class _NumberEntryScreenState extends State<NumberEntryScreen> {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       backgroundColor: laundrivrTheme.opaqueBackgroundColor,
       body: SafeArea(
         child: Center(

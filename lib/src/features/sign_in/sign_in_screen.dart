@@ -3,10 +3,11 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:laundrivr/src/features/sign_in/sign_in_webview.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:laundrivr/src/network/sign_in_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../constants.dart';
 import '../../network/user_metadata_fetcher.dart';
@@ -31,9 +32,14 @@ class _SignInScreenState extends State<SignInScreen> {
       if (_redirecting) return;
       final session = data.session;
       if (session != null) {
-        closeInAppWebView();
+        // closeInAppWebView();
+        // pop the webview
+        Navigator.of(context).pop();
         _redirecting = true;
-        Navigator.of(context).pushReplacementNamed('/home');
+        // in 500 milliseconds, redirect to the home screen
+        Future.delayed(const Duration(milliseconds: 500), () {
+          Navigator.of(context).pushReplacementNamed('/home');
+        });
       }
     });
     super.initState();
@@ -45,10 +51,19 @@ class _SignInScreenState extends State<SignInScreen> {
     super.dispose();
   }
 
-  Future<void> _signInWithGoogle() async {
+  Future<void> _signInWithProvider(Provider provider) async {
     try {
-      await SignInProvider().customSignInWithOAuth(Provider.google,
-          redirectTo: "com.laundrivr.laundrivr://login-callback/");
+      WebViewController controller = await SignInProvider()
+          .customSignInWithOAuth(provider,
+              redirectTo: "com.laundrivr.laundrivr://login-callback/");
+
+      if (!mounted) {
+        return;
+      }
+
+      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
+        return SignInWebView(controller: controller);
+      }));
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
@@ -57,15 +72,12 @@ class _SignInScreenState extends State<SignInScreen> {
     }
   }
 
+  Future<void> _signInWithGoogle() async {
+    await _signInWithProvider(Provider.google);
+  }
+
   Future<void> _signInWithApple() async {
-    try {
-      await SignInProvider().customSignInWithOAuth(Provider.apple,
-          redirectTo: "com.laundrivr.laundrivr://login-callback/");
-    } on AuthException catch (error) {
-      context.showErrorSnackBar(message: error.message);
-    } catch (error) {
-      context.showErrorSnackBar(message: 'Unexpected error occurred');
-    }
+    await _signInWithProvider(Provider.apple);
   }
 
   @override
