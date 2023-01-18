@@ -1,8 +1,8 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:laundrivr/src/model/user/unloaded_user_metadata.dart';
 import 'package:laundrivr/src/model/user/user_metadata.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../constants.dart';
 import '../model/user/user_metadata_constructor.dart';
@@ -30,6 +30,9 @@ class UserMetadataFetcher {
 
   /// Whether the metadata is currently being fetched
   bool _isFetching = false;
+
+  /// The number of times the metadata has been fetched (retry count)
+  int _retryCount = 0;
 
   // create a subscription broadcast stream
   final StreamController<UserMetadata> _streamController =
@@ -70,14 +73,23 @@ class UserMetadataFetcher {
             const UserMetadataConstructor().construct(data);
         // set the cache to the metadata
         _metadata = constructed;
-      } on PostgrestException catch (_) {
-        // return an empty list if there is an error
-        // reset the cache
-        _metadata = UnloadedUserMetadata();
+        // set the retry count to 0
+        _retryCount = 0;
       } catch (error) {
         // return an empty list if there is an error
         // reset the cache
         _metadata = UnloadedUserMetadata();
+
+        // retry, but only 3 times
+        if (_retryCount < 3) {
+          log('Error fetching metadata: $error. Retrying...');
+          // wait 1 second
+          await Future.delayed(const Duration(seconds: 1));
+          // increment the retry count
+          _retryCount++;
+          // fetch the metadata again
+          await fetchMetadata();
+        }
       }
     }
 
