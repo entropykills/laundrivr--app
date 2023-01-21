@@ -1,6 +1,5 @@
+import 'package:flutter_web_auth/flutter_web_auth.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:url_launcher/url_launcher.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 class SignInProvider {
   static final SignInProvider _instance = SignInProvider._internal();
@@ -11,7 +10,7 @@ class SignInProvider {
 
   SignInProvider._internal();
 
-  Future<WebViewController> customSignInWithOAuth(
+  Future<AuthSessionUrlResponse> customSignInWithOAuth(
     Provider provider, {
     String? redirectTo,
     String? scopes,
@@ -23,22 +22,12 @@ class SignInProvider {
       scopes: scopes,
       queryParams: queryParams,
     );
-    final url = Uri.parse(res.url!);
 
-    WebViewController controller = WebViewController()
-      ..setJavaScriptMode(JavaScriptMode.unrestricted)
-      ..setUserAgent("random")
-      ..setNavigationDelegate(NavigationDelegate(
-        onNavigationRequest: (req) {
-          if (req.url.startsWith("com.laundrivr.laundrivr://login-callback/")) {
-            launchUrl(Uri.parse(req.url));
-            return NavigationDecision.prevent;
-          }
-          return NavigationDecision.navigate;
-        },
-      ))
-      ..loadRequest(url);
-
-    return controller;
+    // Present the dialog to the user
+    final result = await FlutterWebAuth.authenticate(
+        url: res.url!, callbackUrlScheme: "com.laundrivr.laundrivr");
+    AuthSessionUrlResponse response = await Supabase.instance.client.auth
+        .getSessionFromUrl(Uri.parse(result));
+    return response;
   }
 }

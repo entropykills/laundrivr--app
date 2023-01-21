@@ -3,11 +3,9 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-import 'package:laundrivr/src/features/sign_in/sign_in_webview.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:laundrivr/src/network/sign_in_provider.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'package:webview_flutter/webview_flutter.dart';
 
 import '../../constants.dart';
 import '../../network/user_metadata_fetcher.dart';
@@ -32,9 +30,6 @@ class _SignInScreenState extends State<SignInScreen> {
       if (_redirecting) return;
       final session = data.session;
       if (session != null) {
-        // closeInAppWebView();
-        // pop the webview
-        Navigator.of(context).pop();
         _redirecting = true;
         // in 500 milliseconds, redirect to the home screen
         Future.delayed(const Duration(milliseconds: 500), () {
@@ -53,17 +48,10 @@ class _SignInScreenState extends State<SignInScreen> {
 
   Future<void> _signInWithProvider(Provider provider) async {
     try {
-      WebViewController controller = await SignInProvider()
+      AuthSessionUrlResponse response = await SignInProvider()
           .customSignInWithOAuth(provider,
               redirectTo: "com.laundrivr.laundrivr://login-callback/");
-
-      if (!mounted) {
-        return;
-      }
-
-      Navigator.of(context).push(MaterialPageRoute(builder: (context) {
-        return SignInWebView(controller: controller);
-      }));
+      log("auth response: ${response.session}");
     } on AuthException catch (error) {
       context.showErrorSnackBar(message: error.message);
     } catch (error) {
