@@ -25,7 +25,7 @@ class _SignInScreenState extends State<SignInScreen> {
   void initState() {
     _authStateSubscription = supabase.auth.onAuthStateChange.listen((data) {
       // clear the cache for metadata
-      UserMetadataFetcher().clearCache();
+      UserMetadataFetcher().clear();
 
       if (_redirecting) return;
       final session = data.session;

@@ -1,10 +1,9 @@
-import 'dart:developer';
-
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:laundrivr/src/ble/ble_reactive_instance.dart';
+import 'package:laundrivr/src/dialog_utils.dart';
 import 'package:laundrivr/src/features/root/root_screen.dart';
 import 'package:laundrivr/src/features/scan_qr/scan_qr_screen.dart';
 import 'package:laundrivr/src/features/sign_in/sign_in_screen.dart';
@@ -27,10 +26,10 @@ Future<void> main() async {
     anonKey: Constants.supabaseAnonKey,
   );
 
-  // fetch user metadata
-  UserMetadataFetcher().fetchMetadata();
-  // fetch packages
-  PackageFetcher().fetchPackages();
+  if (supabase.auth.currentUser != null) {
+    UserMetadataFetcher().fetch();
+    PackageFetcher().fetch();
+  }
 
   runApp(const LaundrivrApp());
 }
@@ -49,7 +48,6 @@ class LaundrivrApp extends StatelessWidget {
 
     _handlePermissionsRequests(context);
 
-    // initialize ble
     BleReactiveInstance().ble.initialize();
 
     return SkeletonTheme(
@@ -104,54 +102,35 @@ class LaundrivrApp extends StatelessWidget {
     );
   }
 
-  Future<AlertButton> _showDialog(String title, String message) async {
-    return FlutterPlatformAlert.showAlert(
-        windowTitle: title,
-        text: message,
-        alertStyle: AlertButtonStyle.ok,
-        iconStyle: IconStyle.information,
-        windowPosition: AlertWindowPosition.screenCenter);
-  }
-
   Future<void> _handlePermissionsRequests(BuildContext context) async {
-    // add all bluetooth permissions to a list and check if all are granted
-    final List<Permission> permissions = <Permission>[
-      // Permission.bluetoothScan,
-      Permission.bluetooth,
-      // Permission.bluetoothAdvertise,
-      // Permission.bluetoothConnect,
-      Permission.locationWhenInUse,
+    final List<Permission> requiredPermissions = <Permission>[
+      Permission.bluetooth
     ];
 
-    // check if all permissions are granted by requesting them
-    final Map<Permission, PermissionStatus> statuses =
-        await permissions.request();
+    bool shouldAskForPermissionsAgain = true;
 
-    // loop entire list and check if all permissions are granted
-    for (final Permission permission in permissions) {
-      PermissionStatus status = statuses[permission]!;
-      log('Permission: $permission, Status: $status');
-    }
+    while (shouldAskForPermissionsAgain) {
+      final Map<Permission, PermissionStatus> statusesOfPermissions =
+          await requiredPermissions.request();
 
-    // check if all permissions are granted
-    if (statuses.values.every((PermissionStatus status) => status.isGranted)) {
-      // all permissions are granted
-      return;
-    } else {
-      // at least one permission is denied
-      // check if any are permanently denied, if so open app settings
-      if (statuses.values
+      if (statusesOfPermissions.values
+          .every((PermissionStatus status) => status.isGranted)) {
+        shouldAskForPermissionsAgain = false;
+        continue;
+      }
+
+      if (!statusesOfPermissions.values
           .any((PermissionStatus status) => status.isPermanentlyDenied)) {
-        // show a dialog to open app settings
-        final AlertButton result = await _showDialog(
-            'Permissions Required',
-            'Please grant all permissions to use the app. '
-                'You can do this by going to the app settings.');
+        continue;
+      }
 
-        if (result == AlertButton.okButton) {
-          // open app settings
-          await openAppSettings();
-        }
+      final AlertButton result = await DialogUtils().showDialog(
+          'Permissions Required',
+          'Please grant all required permissions to use the app. '
+              'You can do this by going to the app settings.');
+      if (result == AlertButton.okButton) {
+        // open app settings
+        await openAppSettings();
       }
     }
   }

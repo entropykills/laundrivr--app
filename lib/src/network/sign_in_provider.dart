@@ -22,8 +22,6 @@ class SignInProvider {
       scopes: scopes,
       queryParams: queryParams,
     );
-
-    // Present the dialog to the user
     final result = await FlutterWebAuth.authenticate(
         url: res.url!, callbackUrlScheme: "com.laundrivr.laundrivr");
     AuthSessionUrlResponse response = await Supabase.instance.client.auth

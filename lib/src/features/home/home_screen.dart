@@ -6,11 +6,12 @@ import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:laundrivr/src/model/user/unloaded_user_metadata.dart';
+import 'package:laundrivr/src/model/user/unloaded_user_metadata_repository.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
 import '../../constants.dart';
-import '../../model/user/user_metadata.dart';
+import '../../model/user/user_metadata_repository.dart';
 import '../../network/user_metadata_fetcher.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -22,10 +23,9 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   /// Create a subscription for the broadcast stream for the user metadata
-  StreamSubscription<UserMetadata>? _userMetadataSubscription;
+  StreamSubscription<UserMetadataRepository>? _userMetadataSubscription;
 
-  /// User metadata
-  UserMetadata _userMetadata = UnloadedUserMetadata();
+  UserMetadataRepository _userMetadata = UnloadedUserMetadataRepository();
 
   @override
   void initState() {
@@ -52,8 +52,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _refreshUserMetadata() async {
     // refresh the user metadata
-    UserMetadataFetcher().clearCache();
-    await UserMetadataFetcher().fetchMetadata(force: true);
+    UserMetadataFetcher().clear();
+    await UserMetadataFetcher().fetch(force: true);
   }
 
   @override
@@ -84,8 +84,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   bool _canStartALoad() {
     return _userMetadata is! UnloadedUserMetadata &&
-        (_userMetadata.loadsAvailable > 0 ||
-            _userMetadata.loadsAvailable == -1);
+        (_userMetadata.get().loadsAvailable > 0 ||
+            _userMetadata.get().loadsAvailable == -1);
   }
 
   @override
@@ -206,9 +206,12 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding:
                                   const EdgeInsets.only(left: 20, right: 20),
                               child: AutoSizeText(
-                                _userMetadata.loadsAvailable == -1
+                                _userMetadata.get().loadsAvailable == -1
                                     ? '\u{221E}'
-                                    : _userMetadata.loadsAvailable.toString(),
+                                    : _userMetadata
+                                        .get()
+                                        .loadsAvailable
+                                        .toString(),
                                 maxLines: 1,
                                 style:
                                     laundrivrTheme.primaryTextStyle!.copyWith(

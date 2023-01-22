@@ -1,7 +1,6 @@
+import 'package:laundrivr/src/model/object_repository.dart';
 import 'package:laundrivr/src/model/packages/purchasable_package.dart';
 
-class PackageRepository {
-  List<PurchasablePackage> packages;
-
-  PackageRepository({required this.packages});
+class PackageRepository extends ObjectRepository<List<PurchasablePackage>> {
+  PackageRepository({required super.object});
 }

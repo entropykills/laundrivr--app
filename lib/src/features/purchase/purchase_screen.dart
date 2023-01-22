@@ -50,7 +50,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
 
   void _initializePackages() async {
     // fetch the packages
-    var packages = await PackageFetcher().fetchPackages();
+    var packages = await PackageFetcher().fetch();
     setState(() {
       _packages = packages;
     });
@@ -58,8 +58,8 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
 
   Future<void> _refreshPackages() async {
     // refresh the packages
-    PackageFetcher().clearCache();
-    await PackageFetcher().fetchPackages(force: true);
+    PackageFetcher().clear();
+    await PackageFetcher().fetch(force: true);
   }
 
   // get the checkout link fetcher
@@ -120,7 +120,7 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                             )
                           else
                             // sort the packages by price
-                            for (final purchasablePackage in _packages.packages)
+                            for (final purchasablePackage in _packages.get())
                               Padding(
                                 padding: const EdgeInsets.all(20.0),
                                 child: Stack(
