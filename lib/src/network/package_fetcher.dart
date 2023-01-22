@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:laundrivr/src/constants.dart';
 import 'package:laundrivr/src/model/packages/package_repository.dart';
@@ -16,16 +17,16 @@ class PackageFetcher extends GenericFetcher<PackageRepository> {
   }
 
   PackageFetcher._internal()
-      : super(const Duration(seconds: 1),
-            repository: UnloadedPackageRepository());
+      : super(const Duration(seconds: 1), UnloadedPackageRepository());
 
   @override
-  Future<PackageRepository> _fetch() async {
+  Future<PackageRepository> fetchFromDatabase() async {
+    log('PackageFetcher: Fetching packages...');
     PackageRepository repository = UnloadedPackageRepository();
 
     final data = (await supabase
         .from(Constants.supabasePurchasablePackagesTableName)
-        .select('*'));
+        .select('*')) as List;
 
     List<PurchasablePackage> packages = [];
 
@@ -39,6 +40,12 @@ class PackageFetcher extends GenericFetcher<PackageRepository> {
 
     repository = PackageRepository(object: packages);
 
+    log('PackageFetcher: ${repository.object.length} packages fetched');
     return repository;
+  }
+
+  @override
+  PackageRepository provideUnloadedRepository() {
+    return UnloadedPackageRepository();
   }
 }

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:laundrivr/src/model/object_repository.dart';
 
@@ -7,7 +8,7 @@ import '../model/unloaded_object_repository.dart';
 abstract class GenericFetcher<T extends ObjectRepository> {
   final Duration _cooldown;
 
-  T _repository = UnloadedObjectRepository() as T;
+  late T _repository;
 
   DateTime _lastFetch = DateTime.now().subtract(const Duration(minutes: 1));
 
@@ -18,10 +19,11 @@ abstract class GenericFetcher<T extends ObjectRepository> {
 
   final bool shouldRetryInfinitely;
 
-  GenericFetcher(this._cooldown,
-      {this.shouldRetryInfinitely = false, required T repository});
+  GenericFetcher(this._cooldown, this._repository,
+      {this.shouldRetryInfinitely = false});
 
   Future<T> fetch({bool force = false}) async {
+    log('Fetching...');
     if (DateTime.now().difference(_lastFetch) < _cooldown && !force) {
       return Future.value(_repository);
     }
@@ -38,9 +40,11 @@ abstract class GenericFetcher<T extends ObjectRepository> {
       bool shouldRetry = true;
       while (shouldRetry) {
         try {
-          _repository = await _fetch();
+          _repository = await fetchFromDatabase();
           shouldRetry = false;
+          log('Fetched successfully!');
         } catch (e) {
+          log('Error while fetching: $e');
           if (!shouldRetryInfinitely) {
             shouldRetry = false;
           }
@@ -61,7 +65,7 @@ abstract class GenericFetcher<T extends ObjectRepository> {
   }
 
   void clear() {
-    _repository = UnloadedObjectRepository() as T;
+    _repository = provideUnloadedRepository();
   }
 
   void update(T repository) {
@@ -71,5 +75,7 @@ abstract class GenericFetcher<T extends ObjectRepository> {
 
   Stream<T> get stream => _objectRepositoryStreamController.stream;
 
-  Future<T> _fetch();
+  Future<T> fetchFromDatabase();
+
+  T provideUnloadedRepository();
 }
