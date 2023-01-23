@@ -107,7 +107,6 @@ class LaundrivrApp extends StatelessWidget {
   List<Permission> _getRequiredPermissions() {
     if (Platform.isIOS) {
       return <Permission>[
-        Permission.location,
         Permission.bluetooth,
       ];
     } else {

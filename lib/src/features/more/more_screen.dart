@@ -76,8 +76,8 @@ class _MoreScreenState extends State<MoreScreen> {
             SvgPicture.asset(
               "assets/images/laundrivr_logo+text_golden.svg",
               semanticsLabel: 'Laundrivr Logo',
-              width: constraints.maxWidth < 400 ? 110 : 200,
-              height: constraints.maxWidth < 400 ? 110 : 200,
+              width: 110,
+              height: 110,
             ),
             SizedBox(
               height: constraints.maxHeight < 600 ? 10 : 20,
