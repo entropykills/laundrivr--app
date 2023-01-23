@@ -76,14 +76,15 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
         throw Exception('Cannot launch $checkoutLink');
       }
       // open the checkout link in the browser
-      await launchUrlString(checkoutLink);
+      await launchUrlString(checkoutLink, mode: LaunchMode.platformDefault);
     } catch (e) {
       // if there is an error, show a snackbar
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
             duration: Duration(seconds: 10),
-            content: Text("Oops, we couldn't open checkout link!"),
+            content:
+                Text("Oops, we couldn't open your checkout link! Try again."),
           ),
         );
       }

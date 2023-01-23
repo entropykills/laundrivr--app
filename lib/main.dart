@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
@@ -102,10 +104,22 @@ class LaundrivrApp extends StatelessWidget {
     );
   }
 
+  List<Permission> _getRequiredPermissions() {
+    if (Platform.isIOS) {
+      return <Permission>[
+        Permission.location,
+        Permission.bluetooth,
+      ];
+    } else {
+      return <Permission>[
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+      ];
+    }
+  }
+
   Future<void> _handlePermissionsRequests(BuildContext context) async {
-    final List<Permission> requiredPermissions = <Permission>[
-      Permission.bluetooth
-    ];
+    final List<Permission> requiredPermissions = _getRequiredPermissions();
 
     bool shouldAskForPermissionsAgain = true;
 
