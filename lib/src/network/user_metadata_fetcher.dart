@@ -32,7 +32,7 @@ class UserMetadataFetcher extends GenericFetcher<UserMetadataRepository> {
         .limit(1)
         .single());
 
-    log('UserMetadataFetcher: ${data.data}');
+    log('UserMetadataFetcher Data: $data');
 
     // create a new metadata constructor
     UserMetadata constructed = const UserMetadataConstructor().construct(data);

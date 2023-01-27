@@ -3,8 +3,6 @@ import 'dart:developer';
 
 import 'package:laundrivr/src/model/object_repository.dart';
 
-import '../model/unloaded_object_repository.dart';
-
 abstract class GenericFetcher<T extends ObjectRepository> {
   final Duration _cooldown;
 
@@ -36,20 +34,20 @@ abstract class GenericFetcher<T extends ObjectRepository> {
 
     _isCurrentlyFetching = true;
 
-    if (_repository is UnloadedObjectRepository) {
-      bool shouldRetry = true;
-      while (shouldRetry) {
-        try {
-          _repository = await fetchFromDatabase();
+    log('Fetching from database...');
+
+    bool shouldRetry = true;
+    while (shouldRetry) {
+      try {
+        _repository = await fetchFromDatabase();
+        shouldRetry = false;
+        log('Fetched successfully!');
+      } catch (e) {
+        log('Error while fetching: $e');
+        if (!shouldRetryInfinitely) {
           shouldRetry = false;
-          log('Fetched successfully!');
-        } catch (e) {
-          log('Error while fetching: $e');
-          if (!shouldRetryInfinitely) {
-            shouldRetry = false;
-          }
-          await Future.delayed(_cooldown);
         }
+        await Future.delayed(_cooldown);
       }
     }
 
