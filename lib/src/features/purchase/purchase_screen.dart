@@ -51,9 +51,12 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
   void _initializePackages() async {
     // fetch the packages
     var packages = await PackageFetcher().fetch();
-    setState(() {
-      _packages = packages;
-    });
+    // if mounted, set the state
+    if (mounted) {
+      setState(() {
+        _packages = packages;
+      });
+    }
   }
 
   Future<void> _refreshPackages() async {

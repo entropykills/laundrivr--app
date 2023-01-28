@@ -1,6 +1,5 @@
-# shellcheck disable=SC2046
-export $(grep -v '^#' .env.local | xargs)
-
 flutter pub run flutter_launcher_icons
-flutter build apk --dart-define=SUPABASE_URL="$SUPABASE_URL" --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY" -t lib/main.dart
-flutter build appbundle --dart-define=SUPABASE_URL="$SUPABASE_URL" --dart-define=SUPABASE_ANON_KEY="$SUPABASE_ANON_KEY"
+flutter pub run build_runner clean
+flutter pub run build_runner build --delete-conflicting-outputs
+flutter build apk -t lib/main.dart
+flutter build appbundle

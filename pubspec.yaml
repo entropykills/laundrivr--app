@@ -15,7 +15,7 @@ publish_to: 'none' # Remove this line if you wish to publish to pub.dev
 # In iOS, build-name is used as CFBundleShortVersionString while build-number used as CFBundleVersion.
 # Read more about iOS versioning at
 # https://developer.apple.com/library/archive/documentation/General/Reference/InfoPlistKeyReference/Articles/CoreFoundationKeys.html
-version: 1.0.4+4
+version: 1.0.6+1
 
 environment:
   sdk: ">=2.17.6 <3.0.0"
@@ -54,6 +54,12 @@ dependencies:
   auto_size_text: ^3.0.0
   permission_handler: ^10.2.0
   flutter_web_auth: ^0.5.0
+  envied: ^0.3.0
+  json_cache: ^1.5.0
+  localstorage: ^4.0.0+1
+  http: ^0.13.5
+  html: ^0.15.1
+  upgrader: ^6.0.1
 
 dev_dependencies:
   flutter_test:
@@ -65,6 +71,8 @@ dev_dependencies:
   # package. See that file for information about deactivating specific lint
   # rules and activating additional ones.
   flutter_lints: ^2.0.0
+  envied_generator: ^0.3.0
+  build_runner: ^2.3.3
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

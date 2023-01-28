@@ -17,6 +17,7 @@ import 'package:permission_handler/permission_handler.dart';
 import 'package:skeletons/skeletons.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
 
+import 'env/env.dart';
 import 'src/constants.dart';
 import 'src/features/number_entry/number_entry_screen.dart';
 
@@ -24,8 +25,8 @@ Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await Supabase.initialize(
-    url: Constants.supabaseUrl,
-    anonKey: Constants.supabaseAnonKey,
+    url: Env.supabaseUrl,
+    anonKey: Env.supabaseAnonKey,
   );
 
   if (supabase.auth.currentUser != null) {

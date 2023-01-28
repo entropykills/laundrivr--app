@@ -15,4 +15,19 @@ class DialogUtils {
         iconStyle: IconStyle.information,
         windowPosition: AlertWindowPosition.screenCenter);
   }
+
+  Future<void> showDialogWithActions(
+      String title, String message, Map<AlertButton, Function> actions) async {
+    AlertButton response = await FlutterPlatformAlert.showAlert(
+        windowTitle: title,
+        text: message,
+        alertStyle: AlertButtonStyle.ok,
+        iconStyle: IconStyle.information,
+        windowPosition: AlertWindowPosition.screenCenter);
+    for (var action in actions.entries) {
+      if (action.key == response) {
+        action.value();
+      }
+    }
+  }
 }

@@ -5,8 +5,11 @@ import 'package:laundrivr/src/features/home/home_screen.dart';
 import 'package:laundrivr/src/features/more/more_screen.dart';
 import 'package:laundrivr/src/features/purchase/purchase_screen.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
+import 'package:laundrivr/src/update/appcast_configuration_provider.dart';
+import 'package:laundrivr/src/update/upgrader_dialog_style_provider.dart';
 import 'package:loader_overlay/loader_overlay.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
+import 'package:upgrader/upgrader.dart';
 
 import '../../constants.dart';
 
@@ -67,61 +70,70 @@ class _RootScreenState extends State<RootScreen> {
   Widget build(BuildContext context) {
     final LaundrivrTheme laundrivrTheme =
         Theme.of(context).extension<LaundrivrTheme>()!;
-    return LoaderOverlay(
-      child: Scaffold(
-        backgroundColor: laundrivrTheme.opaqueBackgroundColor,
-        body: SafeArea(
-          child: SizedBox.expand(
-            child: PageView(
-              controller: _pageController,
-              onPageChanged: (index) {
-                setState(() => _selectedIndex = index);
-              },
-              children: _pages,
+    return UpgradeAlert(
+      upgrader: Upgrader(
+          durationUntilAlertAgain: const Duration(seconds: 0),
+          showReleaseNotes: false,
+          showIgnore: false,
+          showLater: false,
+          appcastConfig: AppcastConfigurationProvider().provide(),
+          dialogStyle: UpgraderDialogStyleProvider().defaultDialogStyle),
+      child: LoaderOverlay(
+        child: Scaffold(
+          backgroundColor: laundrivrTheme.opaqueBackgroundColor,
+          body: SafeArea(
+            child: SizedBox.expand(
+              child: PageView(
+                controller: _pageController,
+                onPageChanged: (index) {
+                  setState(() => _selectedIndex = index);
+                },
+                children: _pages,
+              ),
             ),
           ),
-        ),
-        bottomNavigationBar: Container(
-          decoration: const BoxDecoration(
-            borderRadius: BorderRadius.only(
-              topLeft: Radius.circular(30),
-              topRight: Radius.circular(30),
+          bottomNavigationBar: Container(
+            decoration: const BoxDecoration(
+              borderRadius: BorderRadius.only(
+                topLeft: Radius.circular(30),
+                topRight: Radius.circular(30),
+              ),
             ),
-          ),
-          child: ClipRRect(
-            borderRadius: const BorderRadius.only(
-              topLeft: Radius.circular(30.0),
-              topRight: Radius.circular(30.0),
-            ),
-            child: BottomNavigationBar(
-              backgroundColor: laundrivrTheme.secondaryOpaqueBackgroundColor,
-              selectedItemColor: laundrivrTheme.selectedIconColor,
-              unselectedItemColor: laundrivrTheme.unselectedIconColor,
-              onTap: _onItemTapped,
-              currentIndex: _selectedIndex,
-              items: const [
-                BottomNavigationBarItem(
-                  label: 'Home',
-                  icon: Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Icon(Icons.home, size: 40),
+            child: ClipRRect(
+              borderRadius: const BorderRadius.only(
+                topLeft: Radius.circular(30.0),
+                topRight: Radius.circular(30.0),
+              ),
+              child: BottomNavigationBar(
+                backgroundColor: laundrivrTheme.secondaryOpaqueBackgroundColor,
+                selectedItemColor: laundrivrTheme.selectedIconColor,
+                unselectedItemColor: laundrivrTheme.unselectedIconColor,
+                onTap: _onItemTapped,
+                currentIndex: _selectedIndex,
+                items: const [
+                  BottomNavigationBarItem(
+                    label: 'Home',
+                    icon: Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Icon(Icons.home, size: 40),
+                    ),
                   ),
-                ),
-                BottomNavigationBarItem(
-                  label: 'Packages',
-                  icon: Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Icon(Icons.shopping_cart, size: 40),
+                  BottomNavigationBarItem(
+                    label: 'Packages',
+                    icon: Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Icon(Icons.shopping_cart, size: 40),
+                    ),
                   ),
-                ),
-                BottomNavigationBarItem(
-                  label: 'More',
-                  icon: Padding(
-                    padding: EdgeInsets.only(top: 20),
-                    child: Icon(Icons.more_horiz, size: 40),
+                  BottomNavigationBarItem(
+                    label: 'More',
+                    icon: Padding(
+                      padding: EdgeInsets.only(top: 20),
+                      child: Icon(Icons.more_horiz, size: 40),
+                    ),
                   ),
-                ),
-              ],
+                ],
+              ),
             ),
           ),
         ),
