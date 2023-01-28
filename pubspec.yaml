@@ -55,10 +55,7 @@ dependencies:
   permission_handler: ^10.2.0
   flutter_web_auth: ^0.5.0
   envied: ^0.3.0
-  json_cache: ^1.5.0
-  localstorage: ^4.0.0+1
   http: ^0.13.5
-  html: ^0.15.1
   upgrader: ^6.0.1
 
 dev_dependencies:
