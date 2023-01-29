@@ -3,7 +3,7 @@ import 'dart:developer';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_platform_alert/flutter_platform_alert.dart';
-import 'package:laundrivr/src/data/filter.dart';
+import 'package:laundrivr/src/data/model/filter.dart';
 import 'package:mobile_scanner/mobile_scanner.dart';
 
 import '../../qr/QrScannerOverlayShape.dart';
@@ -79,7 +79,7 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
       }
 
       Filter<String> filter;
-      log('Scanned code: ${code}');
+      log('Scanned code: $code');
 
       // if the qr code length is 3, the filter for finding the device is the ending digits
       if (code.length == 3) {
@@ -165,56 +165,22 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
                   const SizedBox(width: 25),
                   GestureDetector(
                     onTap: _backToHome,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: laundrivrTheme.backButtonBackgroundColor,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(100))),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            Icons.arrow_back,
-                            size: 45,
-                            color: laundrivrTheme.primaryBrightTextColor,
-                          ),
-                        )),
+                    child: BackButtonContainer(laundrivrTheme: laundrivrTheme),
                   ),
                   // flex
                   const Expanded(child: SizedBox()),
                   GestureDetector(
                     onTap: _toggleFlash,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: laundrivrTheme.opaqueBackgroundColor,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(100))),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            _flashEnabled ? Icons.flash_on : Icons.flash_off,
-                            size: 45,
-                            color: laundrivrTheme.primaryBrightTextColor,
-                          ),
-                        )),
+                    child: ToggleFlashContainer(
+                        laundrivrTheme: laundrivrTheme,
+                        flashEnabled: _flashEnabled),
                   ),
                   const SizedBox(width: 25),
                   GestureDetector(
                     onTap: _switchCamera,
-                    child: Container(
-                        decoration: BoxDecoration(
-                            color: laundrivrTheme.opaqueBackgroundColor,
-                            borderRadius:
-                                const BorderRadius.all(Radius.circular(100))),
-                        child: Padding(
-                          padding: const EdgeInsets.all(8.0),
-                          child: Icon(
-                            _cameraFlippedForward
-                                ? Icons.camera_front
-                                : Icons.camera_rear,
-                            size: 45,
-                            color: laundrivrTheme.primaryBrightTextColor,
-                          ),
-                        )),
+                    child: SwitchCameraContainer(
+                        laundrivrTheme: laundrivrTheme,
+                        cameraFlippedForward: _cameraFlippedForward),
                   ),
                   const SizedBox(width: 25),
                 ],
@@ -224,5 +190,86 @@ class _ScanQrScreenState extends State<ScanQrScreen> {
         ),
       ],
     ));
+  }
+}
+
+class SwitchCameraContainer extends StatelessWidget {
+  const SwitchCameraContainer({
+    Key? key,
+    required this.laundrivrTheme,
+    required bool cameraFlippedForward,
+  })  : _cameraFlippedForward = cameraFlippedForward,
+        super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+  final bool _cameraFlippedForward;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+            color: laundrivrTheme.opaqueBackgroundColor,
+            borderRadius: const BorderRadius.all(Radius.circular(100))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            _cameraFlippedForward ? Icons.camera_front : Icons.camera_rear,
+            size: 45,
+            color: laundrivrTheme.primaryBrightTextColor,
+          ),
+        ));
+  }
+}
+
+class ToggleFlashContainer extends StatelessWidget {
+  const ToggleFlashContainer({
+    Key? key,
+    required this.laundrivrTheme,
+    required bool flashEnabled,
+  })  : _flashEnabled = flashEnabled,
+        super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+  final bool _flashEnabled;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+            color: laundrivrTheme.opaqueBackgroundColor,
+            borderRadius: const BorderRadius.all(Radius.circular(100))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            _flashEnabled ? Icons.flash_on : Icons.flash_off,
+            size: 45,
+            color: laundrivrTheme.primaryBrightTextColor,
+          ),
+        ));
+  }
+}
+
+class BackButtonContainer extends StatelessWidget {
+  const BackButtonContainer({
+    Key? key,
+    required this.laundrivrTheme,
+  }) : super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+        decoration: BoxDecoration(
+            color: laundrivrTheme.backButtonBackgroundColor,
+            borderRadius: const BorderRadius.all(Radius.circular(100))),
+        child: Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Icon(
+            Icons.arrow_back,
+            size: 45,
+            color: laundrivrTheme.primaryBrightTextColor,
+          ),
+        ));
   }
 }

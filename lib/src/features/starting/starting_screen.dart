@@ -6,8 +6,8 @@ import 'package:flutter_platform_alert/flutter_platform_alert.dart';
 import 'package:flutter_svg/svg.dart';
 
 import '../../data/adapter/ble_communicator_adapter_reactive.dart';
-import '../../data/filter.dart';
-import '../../data/utils/result/data_machine_result.dart';
+import '../../data/model/data_machine_result.dart';
+import '../../data/model/filter.dart';
 import '../../network/user_metadata_updater.dart';
 import '../theme/laundrivr_theme.dart';
 

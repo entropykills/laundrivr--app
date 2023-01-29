@@ -4,18 +4,18 @@ import 'dart:developer';
 import 'package:flutter_reactive_ble/flutter_reactive_ble.dart';
 import 'package:laundrivr/src/ble/ble_device_connector.dart';
 import 'package:laundrivr/src/data/adapter/ble_adapter.dart';
-import 'package:laundrivr/src/data/filter.dart';
 import 'package:laundrivr/src/data/machine/ble_data_machine.dart';
 import 'package:laundrivr/src/data/machine/data_machine.dart';
 import 'package:laundrivr/src/data/machine/empty_data_machine.dart';
+import 'package:laundrivr/src/data/model/communicator_execution_result.dart';
+import 'package:laundrivr/src/data/model/filter.dart';
 import 'package:laundrivr/src/data/utils/ble_constants.dart';
 import 'package:laundrivr/src/data/utils/ble_utils.dart';
-import 'package:laundrivr/src/data/utils/result/communicator_execution_result.dart';
 
 import '../../ble/ble_device_interactor.dart';
 import '../../ble/ble_scanner.dart';
 import '../enum/ble_machine_type.dart';
-import '../utils/result/data_machine_result.dart';
+import '../model/data_machine_result.dart';
 
 class BleCommunicatorAdapter4 extends BleAdapter {
   // NOTES: ble is always scanning, we just listen when we want to

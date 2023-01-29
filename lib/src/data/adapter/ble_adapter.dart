@@ -1,5 +1,5 @@
-import '../filter.dart';
-import '../utils/result/communicator_execution_result.dart';
+import '../model/communicator_execution_result.dart';
+import '../model/filter.dart';
 
 abstract class BleAdapter {
   void write(List<List<int>> data);

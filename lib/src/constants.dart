@@ -8,6 +8,16 @@ abstract class Constants {
       "purchasable_packages";
 
   static const String supabaseUserMetadataTableName = "user_metadata";
+
+  static const String email = 'help@laundrivr.com';
+
+  static const String emailLaunchUrl = 'mailto:$email';
+
+  static const String privacyPolicyUrl = 'https://laundrivr.com/privacy';
+
+  static const String termsOfUseUrl = "https://laundrivr.com/terms";
+
+  static const String websiteUrl = "https://laundrivr.com";
 }
 
 extension ShowSnackBar on BuildContext {

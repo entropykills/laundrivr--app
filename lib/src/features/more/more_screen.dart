@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:laundrivr/src/constants.dart';
 import 'package:package_info_plus/package_info_plus.dart';
 import 'package:url_launcher/url_launcher_string.dart';
 
@@ -14,16 +15,6 @@ class MoreScreen extends StatefulWidget {
 }
 
 class _MoreScreenState extends State<MoreScreen> {
-  static const String email = 'help@laundrivr.com';
-
-  static const String emailLaunchUrl = 'mailto:$email';
-
-  static const String privacyPolicyUrl = 'https://laundrivr.com/privacy';
-
-  static const String termsOfUseUrl = "https://laundrivr.com/terms";
-
-  static const String websiteUrl = "https://laundrivr.com";
-
   bool _loadingPackageInfo = true;
 
   PackageInfo _packageInfo = PackageInfo(
@@ -53,7 +44,8 @@ class _MoreScreenState extends State<MoreScreen> {
     if (!(await canLaunchUrlString(url))) {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text('Oops! Something went wrong. Email us at $email'),
+          content: Text(
+              'Oops! Something went wrong. Email us at ${Constants.email}'),
         ),
       );
     }
@@ -119,7 +111,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(privacyPolicyUrl);
+                        _launchURL(Constants.privacyPolicyUrl);
                       },
                       child: Text(
                         'Privacy Policy',
@@ -145,7 +137,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(termsOfUseUrl);
+                        _launchURL(Constants.termsOfUseUrl);
                       },
                       child: Text(
                         'Terms of Use',
@@ -171,7 +163,7 @@ class _MoreScreenState extends State<MoreScreen> {
                     ),
                     child: TextButton(
                       onPressed: () {
-                        _launchURL(websiteUrl);
+                        _launchURL(Constants.websiteUrl);
                       },
                       child: Text(
                         'Visit the Website',
@@ -214,7 +206,7 @@ class _MoreScreenState extends State<MoreScreen> {
                         ),
                         recognizer: TapGestureRecognizer()
                           ..onTap = () {
-                            _launchURL(emailLaunchUrl);
+                            _launchURL(Constants.emailLaunchUrl);
                           }),
                   ),
                 ],

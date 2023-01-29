@@ -136,88 +136,105 @@ class _PurchaseScreenState extends State<PurchaseScreen> {
                                           _fetchAndOpenCheckoutLink(
                                               purchasablePackage);
                                         },
-                                        child: Container(
-                                          width: 320,
-                                          height: 165,
-                                          decoration: BoxDecoration(
-                                            color: laundrivrTheme
-                                                .secondaryOpaqueBackgroundColor,
-                                            borderRadius:
-                                                BorderRadius.circular(40),
-                                            boxShadow: [
-                                              BoxShadow(
-                                                color: Colors.black
-                                                    .withOpacity(0.4),
-                                                spreadRadius: 2,
-                                                blurRadius: 20,
-                                                offset: const Offset(2,
-                                                    2), // changes position of shadow
-                                              ),
-                                            ],
-                                          ),
-                                          child: Padding(
-                                            padding: const EdgeInsets.only(
-                                                bottom: 15),
-                                            child: Column(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.center,
-                                              children: [
-                                                Text(
-                                                  purchasablePackage
-                                                      .displayName,
-                                                  style: laundrivrTheme
-                                                      .primaryTextStyle!
-                                                      .copyWith(
-                                                          fontSize: 25,
-                                                          fontWeight:
-                                                              FontWeight.w900),
-                                                ),
-                                                const SizedBox(height: 10),
-                                                Text(
-                                                  '\$${purchasablePackage.price / 100}',
-                                                  style: laundrivrTheme
-                                                      .primaryTextStyle!
-                                                      .copyWith(
-                                                          fontSize: 48,
-                                                          fontWeight:
-                                                              FontWeight.w900,
-                                                          color: laundrivrTheme
-                                                              .pricingGreen),
-                                                ),
-                                              ],
-                                            ),
-                                          ),
-                                        ),
+                                        child: PackagePriceContainer(
+                                            laundrivrTheme: laundrivrTheme,
+                                            purchasablePackage:
+                                                purchasablePackage),
                                       ),
-                                      Positioned(
-                                        bottom: -20,
-                                        child: Container(
-                                          width: 130,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                            color: laundrivrTheme
-                                                .brightBadgeBackgroundColor,
-                                            borderRadius:
-                                                BorderRadius.circular(40),
-                                          ),
-                                          child: Center(
-                                            child: Text(
-                                              '${purchasablePackage.userReceivedLoads} Loads',
-                                              style: laundrivrTheme
-                                                  .primaryTextStyle!
-                                                  .copyWith(
-                                                      fontSize: 25,
-                                                      fontWeight:
-                                                          FontWeight.w900),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
+                                      PackageBadgeContainer(
+                                          laundrivrTheme: laundrivrTheme,
+                                          purchasablePackage:
+                                              purchasablePackage),
                                     ]),
                               ),
                         ],
                       ),
                     )),
+    );
+  }
+}
+
+class PackageBadgeContainer extends StatelessWidget {
+  const PackageBadgeContainer({
+    Key? key,
+    required this.laundrivrTheme,
+    required this.purchasablePackage,
+  }) : super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+  final PurchasablePackage purchasablePackage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Positioned(
+      bottom: -20,
+      child: Container(
+        width: 130,
+        height: 50,
+        decoration: BoxDecoration(
+          color: laundrivrTheme.brightBadgeBackgroundColor,
+          borderRadius: BorderRadius.circular(40),
+        ),
+        child: Center(
+          child: Text(
+            '${purchasablePackage.userReceivedLoads} Loads',
+            style: laundrivrTheme.primaryTextStyle!
+                .copyWith(fontSize: 25, fontWeight: FontWeight.w900),
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+class PackagePriceContainer extends StatelessWidget {
+  const PackagePriceContainer({
+    Key? key,
+    required this.laundrivrTheme,
+    required this.purchasablePackage,
+  }) : super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+  final PurchasablePackage purchasablePackage;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 320,
+      height: 165,
+      decoration: BoxDecoration(
+        color: laundrivrTheme.secondaryOpaqueBackgroundColor,
+        borderRadius: BorderRadius.circular(40),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            spreadRadius: 2,
+            blurRadius: 20,
+            offset: const Offset(2, 2), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 15),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(
+              purchasablePackage.displayName,
+              style: laundrivrTheme.primaryTextStyle!
+                  .copyWith(fontSize: 25, fontWeight: FontWeight.w900),
+            ),
+            const SizedBox(height: 10),
+            Text(
+              '\$${purchasablePackage.price / 100}',
+              style: laundrivrTheme.primaryTextStyle!.copyWith(
+                  fontSize: 48,
+                  fontWeight: FontWeight.w900,
+                  color: laundrivrTheme.pricingGreen),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }

@@ -2,8 +2,9 @@ import 'dart:async';
 
 import 'package:auto_size_text/auto_size_text.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_platform_alert/flutter_platform_alert.dart';
+import 'package:flutter/rendering.dart';
 import 'package:flutter_svg/svg.dart';
+import 'package:laundrivr/src/dialog_utils.dart';
 import 'package:laundrivr/src/features/theme/laundrivr_theme.dart';
 import 'package:laundrivr/src/model/user/unloaded_user_metadata.dart';
 import 'package:laundrivr/src/model/user/unloaded_user_metadata_repository.dart';
@@ -46,7 +47,7 @@ class _HomeScreenState extends State<HomeScreen> {
   void _initializeMetadata() async {
     // re-fetch the metadata if it's not loaded (issue #4)
     if (_userMetadata is UnloadedUserMetadata) {
-      _refreshUserMetadata();
+      _userMetadata = await UserMetadataFetcher().fetch();
     }
   }
 
@@ -71,15 +72,6 @@ class _HomeScreenState extends State<HomeScreen> {
     } catch (error) {
       context.showErrorSnackBar(message: 'Unexpected error occurred');
     }
-  }
-
-  Future<AlertButton> showDialog(String title, String message) async {
-    return FlutterPlatformAlert.showAlert(
-        windowTitle: title,
-        text: message,
-        alertStyle: AlertButtonStyle.ok,
-        iconStyle: IconStyle.information,
-        windowPosition: AlertWindowPosition.screenCenter);
   }
 
   bool _canStartALoad() {
@@ -179,60 +171,10 @@ class _HomeScreenState extends State<HomeScreen> {
                         borderRadius: BorderRadius.circular(40),
                       ),
                     ),
-                    child: Container(
-                      width: 320,
-                      height: constraints.maxHeight < 600 ? 175 : 210,
-                      // rounded
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(40),
-                        color: laundrivrTheme.tertiaryOpaqueBackgroundColor,
-                        // add box shadow
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withOpacity(0.4),
-                            spreadRadius: 2,
-                            blurRadius: 20,
-                            offset: const Offset(
-                                2, 2), // changes position of shadow
-                          ),
-                        ],
-                      ),
-                      child: Padding(
-                        padding: const EdgeInsets.only(bottom: 20),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Padding(
-                              padding:
-                                  const EdgeInsets.only(left: 20, right: 20),
-                              child: AutoSizeText(
-                                _userMetadata.get().loadsAvailable == -1
-                                    ? '\u{221E}'
-                                    : _userMetadata
-                                        .get()
-                                        .loadsAvailable
-                                        .toString(),
-                                maxLines: 1,
-                                style:
-                                    laundrivrTheme.primaryTextStyle!.copyWith(
-                                  fontSize:
-                                      constraints.maxHeight < 600 ? 100 : 120,
-                                  fontWeight: FontWeight.w800,
-                                  color: laundrivrTheme.goldenTextColor,
-                                ),
-                              ),
-                            ),
-                            Text(
-                              'Loads Available',
-                              style: laundrivrTheme.primaryTextStyle!.copyWith(
-                                fontSize: constraints.maxHeight < 600 ? 25 : 30,
-                                fontWeight: FontWeight.w900,
-                              ),
-                            )
-                          ],
-                        ),
-                      ),
-                    ),
+                    child: LoadsContainer(
+                        laundrivrTheme: laundrivrTheme,
+                        userMetadata: _userMetadata,
+                        constraints: constraints),
                   ),
                   // const Spacer(),
                   const SizedBox(height: 25),
@@ -257,7 +199,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         // check if the user data is loaded and if the user has loads available
                         if (!_canStartALoad()) {
-                          showDialog('Oops!', 'You have no loads available!');
+                          DialogUtils().showDialog(
+                              'Oops!', 'You have no loads available!');
                           return;
                         }
                         Navigator.pushNamed(context, '/scan_qr');
@@ -306,7 +249,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       onTap: () {
                         // check if the user data is loaded and if the user has loads available
                         if (!_canStartALoad()) {
-                          showDialog('Oops!', 'You have no loads available!');
+                          DialogUtils().showDialog(
+                              'Oops!', 'You have no loads available!');
                           return;
                         }
                         Navigator.pushNamed(context, '/number_entry');
@@ -342,5 +286,70 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       );
     });
+  }
+}
+
+class LoadsContainer extends StatelessWidget {
+  const LoadsContainer({
+    Key? key,
+    required this.laundrivrTheme,
+    required UserMetadataRepository userMetadata,
+    required this.constraints,
+  })  : _userMetadata = userMetadata,
+        super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+  final UserMetadataRepository _userMetadata;
+  final BoxConstraints constraints;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      width: 320,
+      height: constraints.maxHeight < 600 ? 175 : 210,
+      // rounded
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(40),
+        color: laundrivrTheme.tertiaryOpaqueBackgroundColor,
+        // add box shadow
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.4),
+            spreadRadius: 2,
+            blurRadius: 20,
+            offset: const Offset(2, 2), // changes position of shadow
+          ),
+        ],
+      ),
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 20),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Padding(
+              padding: const EdgeInsets.only(left: 20, right: 20),
+              child: AutoSizeText(
+                _userMetadata.get().loadsAvailable == -1
+                    ? '\u{221E}'
+                    : _userMetadata.get().loadsAvailable.toString(),
+                maxLines: 1,
+                style: laundrivrTheme.primaryTextStyle!.copyWith(
+                  fontSize: constraints.maxHeight < 600 ? 100 : 120,
+                  fontWeight: FontWeight.w800,
+                  color: laundrivrTheme.goldenTextColor,
+                ),
+              ),
+            ),
+            Text(
+              'Loads Available',
+              style: laundrivrTheme.primaryTextStyle!.copyWith(
+                fontSize: constraints.maxHeight < 600 ? 25 : 30,
+                fontWeight: FontWeight.w900,
+              ),
+            )
+          ],
+        ),
+      ),
+    );
   }
 }

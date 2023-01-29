@@ -1,4 +1,4 @@
-import 'package:laundrivr/src/data/utils/result/data_machine_result.dart';
+import 'package:laundrivr/src/data/model/data_machine_result.dart';
 
 class CommunicatorExecutionResult {
   late bool _anErrorOccurred;

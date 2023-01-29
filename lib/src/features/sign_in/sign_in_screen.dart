@@ -125,24 +125,9 @@ class _SignInScreenState extends State<SignInScreen> {
                         onPressed: () {
                           _signInWithGoogle();
                         },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            googleLogoWidget,
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Text(
-                              'Continue with Google',
-                              style: TextStyle(
-                                  color: Colors.grey,
-                                  fontFamily: laundrivrTheme
-                                      .primaryTextStyle!.fontFamily,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
+                        child: ContinueWithGoogleContainer(
+                            googleLogoWidget: googleLogoWidget,
+                            laundrivrTheme: laundrivrTheme),
                       ),
                     ),
                   ),
@@ -161,28 +146,8 @@ class _SignInScreenState extends State<SignInScreen> {
                         onPressed: () {
                           _signInWithApple();
                         },
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            const Icon(
-                              Icons.apple,
-                              size: 30,
-                              color: Colors.black,
-                            ),
-                            const SizedBox(
-                              width: 15,
-                            ),
-                            Text(
-                              'Continue with Apple',
-                              style: TextStyle(
-                                  color: Colors.black,
-                                  fontFamily: laundrivrTheme
-                                      .primaryTextStyle!.fontFamily,
-                                  fontSize: 23,
-                                  fontWeight: FontWeight.w600),
-                            ),
-                          ],
-                        ),
+                        child: ContinueWithAppleContainer(
+                            laundrivrTheme: laundrivrTheme),
                       ),
                     ),
                   ),
@@ -192,6 +157,72 @@ class _SignInScreenState extends State<SignInScreen> {
           ),
         );
       },
+    );
+  }
+}
+
+class ContinueWithAppleContainer extends StatelessWidget {
+  const ContinueWithAppleContainer({
+    Key? key,
+    required this.laundrivrTheme,
+  }) : super(key: key);
+
+  final LaundrivrTheme laundrivrTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        const Icon(
+          Icons.apple,
+          size: 30,
+          color: Colors.black,
+        ),
+        const SizedBox(
+          width: 15,
+        ),
+        Text(
+          'Continue with Apple',
+          style: TextStyle(
+              color: Colors.black,
+              fontFamily: laundrivrTheme.primaryTextStyle!.fontFamily,
+              fontSize: 23,
+              fontWeight: FontWeight.w600),
+        ),
+      ],
+    );
+  }
+}
+
+class ContinueWithGoogleContainer extends StatelessWidget {
+  const ContinueWithGoogleContainer({
+    Key? key,
+    required this.googleLogoWidget,
+    required this.laundrivrTheme,
+  }) : super(key: key);
+
+  final Widget googleLogoWidget;
+  final LaundrivrTheme laundrivrTheme;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        googleLogoWidget,
+        const SizedBox(
+          width: 15,
+        ),
+        Text(
+          'Continue with Google',
+          style: TextStyle(
+              color: Colors.grey,
+              fontFamily: laundrivrTheme.primaryTextStyle!.fontFamily,
+              fontSize: 23,
+              fontWeight: FontWeight.w600),
+        ),
+      ],
     );
   }
 }
